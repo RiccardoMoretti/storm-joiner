@@ -1,10 +1,21 @@
 package joiner.computational;
 
+/* Zipf disribution implements Zipf-like law. According to Zipf's law the
+  	most frequent object has probability twice the second most frequent,
+  	three times the third most frequent object, etc. 
+  	More   info at http://en.wikipedia.org/wiki/Zipf's_law.
+ */
+
 import java.util.Random;
 
 public class ZipfGenerator {
      private Random rnd = new Random(System.currentTimeMillis());
      private int size;
+     
+/*     Skew varies the probability "step" between oids. High skew would give
+     more preference to the recent oids. Low skew (< 0.3) would give
+     preference to older oids. */
+
      private double skew;
      private double bottom = 0;
 

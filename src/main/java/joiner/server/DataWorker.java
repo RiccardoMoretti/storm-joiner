@@ -32,6 +32,7 @@ public class DataWorker extends Thread {
 	private boolean done = false;
 	private int from, to;
 	private Domain D ;
+	private ZipfGenerator Z;
 	
 	public DataWorker(int outputPort, DataServerRequest request, Cipher cipher, Set<String> markers, TwinFunction twin) {
 		this(outputPort, request, cipher, markers, twin, true);
@@ -44,7 +45,7 @@ public class DataWorker extends Thread {
 		this.twin = twin;
 		this.moreFlag = pipeline ? 0 : ZMQ.SNDMORE;
 		D = new Domain();
-		
+		Z = new ZipfGenerator ((int) D.getDomainSize(), 0.5 );
 		parseRequest(request);
 	}
 
@@ -62,11 +63,6 @@ public class DataWorker extends Thread {
 	@Override
 	public void run() {
 
-/* A socket of type ZMQ_PUSH is used by a pipeline node to send 
- * 	messages to downstream pipeline nodes. Messages are round-robined 
- * 	to all connected downstream nodes. 
- * The zmq_recv() function is not implemented for this socket type.
-*/
 		context = new ZContext();
 		socket = context.createSocket(ZMQ.PUSH);
 
@@ -84,26 +80,17 @@ public class DataWorker extends Thread {
 
 //	QUI MANDA I DATI REALI E I TWINS			
 			// Send the data (with the twins)
-			for (int i = from; i <= to; ++i)
-				
+
 /*
- * 
- * 
- * 
- *  DEVO 
- *  LAVORARE
- *  QUI
- *  
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
+	 *  DEVO 
+	 *  LAVORARE
+	 *  QUI
  */
+
+			for (int i = from; i <= to; ++i)
+				System.out.println(" Numero casuale "+Z.nextInt());
+			
+			for (int i = from; i <= to; ++i)
 				encryptAndSend(Integer.toString(i), Prefix.DATA, true);
 
 			// Signal the end of the connection
@@ -128,7 +115,7 @@ public class DataWorker extends Thread {
 		
 		// send the message
 		socket.send(cipher.doFinal((prefix.getPrefix() + data).getBytes("UTF-8")), moreFlag);
-		//System.out.println("PREFISSO "+(prefix.getPrefix()+"\t DATO " + data));
+
 		// send the twin if requested and needed
 		if (addTwin && twin.neededFor(data))
 			{socket.send(cipher.doFinal((Prefix.TWIN.getPrefix() + data).getBytes("UTF-8")), moreFlag);
