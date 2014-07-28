@@ -27,6 +27,7 @@ public class DataWorker extends Thread {
 	private final TwinFunction twin;
 	private final int moreFlag;
 	private Socket socket;
+	private float[] discretized ;
 
 	private ZContext context;
 	private boolean done = false;
@@ -46,6 +47,7 @@ public class DataWorker extends Thread {
 		this.moreFlag = pipeline ? 0 : ZMQ.SNDMORE;
 		D = new Domain();
 		Z = new ZipfGenerator ((int) D.getDomainSize(), 0.5 );
+		discretized = new float [Integer.parseInt(request.getColumn())];
 		parseRequest(request);
 	}
 
@@ -87,8 +89,10 @@ public class DataWorker extends Thread {
 	 *  QUI
  */
 
-			for (int i = from; i <= to; ++i)
-				System.out.println(" Numero casuale "+Z.nextInt());
+			for (int i = 0 ; i < to; ++i)
+				{
+					discretized[i] = this.discretized(Z.nextInt());
+				}
 			
 			for (int i = from; i <= to; ++i)
 				encryptAndSend(Integer.toString(i), Prefix.DATA, true);
@@ -123,10 +127,33 @@ public class DataWorker extends Thread {
 			}
 	}
 
+	public float discretized ( float num )
+	{
+			float temp = D.getMax() ;
+			float disc[] = new float[D.getN()] ;
+			disc = D.getDisc();
+			int index = 0;
+			
+			for ( int j = 0 ; j < D.getN() ; j++ )
+			{
+					if ( Math.abs( num - disc[j] ) < temp )
+						{	temp = Math.abs( num - disc[j] );
+							index = j ;
+						}
+			}	
+			
+			System.out.println(" NUMERO "+num+"\t Intervallo "+disc[index]);
+			return disc[index];
+			
+			
+	}
+	
+	
 	public void done() {
 		done = true;
 	}
 
+	
 	@Override
 	protected void finalize() throws Throwable {
 		context.destroy();

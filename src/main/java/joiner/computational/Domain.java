@@ -47,12 +47,20 @@ public class Domain {
 				
 				if ( ( disc[n-1] ) == 0 )
 					disc [ j ] = max ;
-				
+		
+		/*
 				System.out.println ( " INTERVALLI / NUMERI DISCRETI " ) ;
 				System.out.println ( " Numero totale : " + n ) ;
 				for ( int q = 0 ; q < n ; q ++ )
-					System.out.println ( " ETICHETTA " + disc[q] ) ;	
+					System.out.println ( " ETICHETTA " + disc[q] ) ;	*/
+			
 			}
+			
+		public float[] getDisc()
+		{ 	return this.disc; 		}
+		
+		public int getN()
+		{	return this.n ;	}
 		
 		public float getMin()
 		{	return this.min ;	}
