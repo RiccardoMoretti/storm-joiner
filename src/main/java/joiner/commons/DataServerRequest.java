@@ -3,7 +3,7 @@ package joiner.commons;
 public class DataServerRequest {
 	public final String table;
 	public final String column;
-
+	
 	public DataServerRequest(String table, String column) {
 		this.table = table;
 		this.column = column;

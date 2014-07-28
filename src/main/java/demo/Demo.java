@@ -10,23 +10,32 @@ import joiner.commons.twins.TwinFunction;
 import joiner.computational.ComputationalServer;
 import joiner.server.DataServer;
 
-public class Demo {
 
+public class Demo {
+	
 	public static void main(String[] args) throws Exception {
 
-		// create the markers
+		// create the markers 		
 		Set<String> markers = new HashSet<String>();
+		
+/* DEVO LAVORARE QUI PER FAR SI CHE I MAKERS ABBIANO SENSO
+ * 
+ * 
+ */
 		for (int i = 0; i < 100; ++i)
 			markers.add(Integer.toString(i));
 
-		// create the twin function
-		TwinFunction twin = new HashTwinFunction(10);
-
+		// create the twin function ( one every 10 )
+		TwinFunction twin = new HashTwinFunction(5);
+		
 		// create the data server
 		DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin);
+		// causes this thread ( ds ) to begin execution ( method run ) 
 		ds.start();
 
+		// create the computational server 
 		ComputationalServer cs = new ComputationalServer(5555, 2);
+		// causes this thread ( cs ) to begin execution 
 		cs.start();
 
 		// create the client and execute the query
@@ -35,9 +44,9 @@ public class Demo {
 
 		DataServerConnector sc1 = new DataServerConnector("tcp://127.0.0.1:3000", "1", "50");
 		DataServerConnector sc2 = new DataServerConnector("tcp://127.0.0.1:3000", "1", "50");
-
+	
 		client.join(sc1, sc2);
 		client.destroy();
 	}
-
+	
 }

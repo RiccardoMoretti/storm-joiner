@@ -1,6 +1,8 @@
 package joiner.utils;
 
 import java.sql.Connection;
+
+//The basic service for managing a set of JDBC drivers.
 import java.sql.DriverManager;
 
 public class H2DatabaseCreator {
@@ -11,6 +13,8 @@ public class H2DatabaseCreator {
 
 	public static void create(String jdbcString, String table, String column, int from, int to, int step, int repetitions) throws Exception {
 		Class.forName("org.h2.Driver");
+		
+	//Attempts to establish a connection to the given database URL "jdbcString".
 		Connection connection = DriverManager.getConnection(jdbcString);
 		DatabaseCreator.create(connection, table, column, from, to, step, repetitions);
 	}

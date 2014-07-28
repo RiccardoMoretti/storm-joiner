@@ -5,11 +5,11 @@ import java.util.Arrays;
 public class Bytes {
 	
 	private final byte[] bytes;
-
+	
     public Bytes(byte[] bytes) {
         if (bytes == null)
             throw new NullPointerException();
-        this.bytes = bytes;
+        this.bytes = bytes; 
     }
     
     public byte[] getBytes() {
@@ -24,6 +24,8 @@ public class Bytes {
     public boolean equals(Object other) {
         if (!(other instanceof Bytes))
             return false;
+
+        
         return Arrays.equals(bytes, ((Bytes) other).bytes);
     }
 

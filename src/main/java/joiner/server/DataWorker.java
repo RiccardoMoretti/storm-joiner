@@ -14,6 +14,9 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQ.Socket;
 
+import joiner.computational.*;
+
+
 public class DataWorker extends Thread {
 
 	private final Logger logger = LoggerFactory.getLogger(DataWorker.class);
@@ -28,6 +31,7 @@ public class DataWorker extends Thread {
 	private ZContext context;
 	private boolean done = false;
 	private int from, to;
+	private Domain D ;
 	
 	public DataWorker(int outputPort, DataServerRequest request, Cipher cipher, Set<String> markers, TwinFunction twin) {
 		this(outputPort, request, cipher, markers, twin, true);
@@ -39,7 +43,8 @@ public class DataWorker extends Thread {
 		this.markers = markers;
 		this.twin = twin;
 		this.moreFlag = pipeline ? 0 : ZMQ.SNDMORE;
-
+		D = new Domain();
+		
 		parseRequest(request);
 	}
 
@@ -48,30 +53,57 @@ public class DataWorker extends Thread {
 		from = Integer.parseInt(request.getTable());
 		to = Integer.parseInt(request.getColumn());
 	}
-
+	
+	//return total number of tuples ( marker + twin + real )
 	public int getRecordsHint() {
-		return (int) (markers.size() +
-				(to - from + 1) * (1 + twin.getPercent()));
+		return (int) (markers.size() + (to - from + 1) * (1 + twin.getPercent()));
 	}
 
 	@Override
 	public void run() {
 
+/* A socket of type ZMQ_PUSH is used by a pipeline node to send 
+ * 	messages to downstream pipeline nodes. Messages are round-robined 
+ * 	to all connected downstream nodes. 
+ * The zmq_recv() function is not implemented for this socket type.
+*/
 		context = new ZContext();
 		socket = context.createSocket(ZMQ.PUSH);
 
 		try {
 
+// 	I DATI CHE MANDA LI MANDA IN ORDINE CASUALE
 			// Open the output socket
 			socket.bind("tcp://*:" + outputPort);
 			logger.info("Start pushing data to port {}", outputPort);
 
+//	QUI MANDA I 100 MARKERS			
 			// Send all the markers (without their twins) [TODO shuffle them with the data]
 			for (String marker: markers)
 				encryptAndSend(marker, Prefix.MARKER, false);
 
+//	QUI MANDA I DATI REALI E I TWINS			
 			// Send the data (with the twins)
 			for (int i = from; i <= to; ++i)
+				
+/*
+ * 
+ * 
+ * 
+ *  DEVO 
+ *  LAVORARE
+ *  QUI
+ *  
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ */
 				encryptAndSend(Integer.toString(i), Prefix.DATA, true);
 
 			// Signal the end of the connection
@@ -96,10 +128,12 @@ public class DataWorker extends Thread {
 		
 		// send the message
 		socket.send(cipher.doFinal((prefix.getPrefix() + data).getBytes("UTF-8")), moreFlag);
-
+		//System.out.println("PREFISSO "+(prefix.getPrefix()+"\t DATO " + data));
 		// send the twin if requested and needed
 		if (addTwin && twin.neededFor(data))
-			socket.send(cipher.doFinal((Prefix.TWIN.getPrefix() + data).getBytes("UTF-8")), moreFlag);
+			{socket.send(cipher.doFinal((Prefix.TWIN.getPrefix() + data).getBytes("UTF-8")), moreFlag);
+			//System.out.println("PREFISSO "+(Prefix.TWIN.getPrefix()+ "\t DATO "+ data));
+			}
 	}
 
 	public void done() {

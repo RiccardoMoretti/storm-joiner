@@ -57,9 +57,11 @@ public class JoinerTopology extends Thread {
 		
 		int numJoiners = joiners.length;
 		int entriesHint = (int) (totalRecordsHint / numJoiners / 0.7);
+	
 		
 		for (int i = 0; i < numJoiners; ++i) {
 			String socketString = "ipc://joiner-" + i;
+			
 			
 			ComputationalWorker worker = new ComputationalWorker(socketString, outputString, entriesHint);
 			worker.start();
@@ -78,6 +80,7 @@ public class JoinerTopology extends Thread {
 		
 		while (true) {
 			byte[] message = input.recv();
+			//System.out.println("RICCARDO \t"+message );
 			
 			if (message.length == 0) {
 				++completedSpouts;

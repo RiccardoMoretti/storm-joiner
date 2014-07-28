@@ -2,7 +2,7 @@ package joiner.commons;
 
 
 public enum Prefix {
-	
+
 	DATA('0'),
 	MARKER('1'),
 	TWIN('2');

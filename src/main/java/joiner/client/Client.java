@@ -19,6 +19,17 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQ.Socket;
 
+/* This class represents an observable object, or "data" in 
+ * 	the model-view paradigm. 
+ * It can be subclassed to represent an object that the application wants 
+ * 	to have observed. 
+ * An observable object can have one or more observers. An observer may be
+ *  any object that implements interface Observer. After an observable 
+ *  instance changes, an application calling the Observable's notifyObservers 
+ *  method causes all of its observers to be notified of the change 
+ *  by a call to their update method.
+*/
+
 public class Client extends Observable {
 	
 	private final static Logger logger = LoggerFactory.getLogger(Client.class);
@@ -64,6 +75,7 @@ public class Client extends Observable {
 		
 		// send the connectors to the computational server
 		sendDataConnectors(connectors);
+		
 		
 		// initialize the data structures
 		pendingMarkers = new HashSet<String>(markers);

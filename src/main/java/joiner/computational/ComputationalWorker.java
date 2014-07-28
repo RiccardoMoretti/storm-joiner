@@ -1,5 +1,6 @@
 package joiner.computational;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -51,7 +52,9 @@ public class ComputationalWorker extends Thread {
 					output.send(message.getBytes());
 					break;
 				}
-
+//QUI FA IL JOINNNNNNNNN !!
+//CONTAINS è UGUALE AL METODO EQUALS
+				
 				if (pendingKeys.contains(message)) {
 					pendingKeys.remove(message);
 					output.send(message.getBytes());
