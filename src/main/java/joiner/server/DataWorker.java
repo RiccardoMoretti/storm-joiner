@@ -4,6 +4,7 @@ import java.util.Set;
 
 import javax.crypto.Cipher;
 
+import joiner.commons.Bytes;
 import joiner.commons.DataServerRequest;
 import joiner.commons.Prefix;
 import joiner.commons.twins.TwinFunction;
@@ -28,6 +29,8 @@ public class DataWorker extends Thread {
 	private final int moreFlag;
 	private Socket socket;
 	private float[] discretized ;
+	private float[] random;
+	private String skip ;
 
 	private ZContext context;
 	private boolean done = false;
@@ -48,6 +51,9 @@ public class DataWorker extends Thread {
 		D = new Domain();
 		Z = new ZipfGenerator ((int) D.getDomainSize(), 0.5 );
 		discretized = new float [Integer.parseInt(request.getColumn())];
+		random = new float [Integer.parseInt(request.getColumn())];
+		skip = "ABCMorettiRiccardo";
+		
 		parseRequest(request);
 	}
 
@@ -67,35 +73,33 @@ public class DataWorker extends Thread {
 
 		context = new ZContext();
 		socket = context.createSocket(ZMQ.PUSH);
-
+		
+		
 		try {
 
-// 	I DATI CHE MANDA LI MANDA IN ORDINE CASUALE
+// 	I DATI CHE MANDA LI MANDA IN ORDINE CASUALE, COME FACCIO A MANDARLI SEQUENZIALMENTE ?
 			// Open the output socket
 			socket.bind("tcp://*:" + outputPort);
 			logger.info("Start pushing data to port {}", outputPort);
 
 //	QUI MANDA I 100 MARKERS			
-			// Send all the markers (without their twins) [TODO shuffle them with the data]
+// Send all the markers (without their twins) [TODO shuffle them with the data]
 			for (String marker: markers)
-				encryptAndSend(marker, Prefix.MARKER, false);
+			{	encryptAndSendMarker(marker, Prefix.MARKER, false); 
+				//System.out.println("Marker \t" + marker );	
+			}
 
 //	QUI MANDA I DATI REALI E I TWINS			
 			// Send the data (with the twins)
 
-/*
-	 *  DEVO 
-	 *  LAVORARE
-	 *  QUI
- */
-
-			for (int i = 0 ; i < to; ++i)
-				{
-					discretized[i] = this.discretized(Z.nextInt());
-				}
+			for (int i = 0 ; i < to ; ++i)
+			{	random[i] = Z.nextInt();
+				discretized[i] = this.discretized(random[i]);			
+			}
+	
 			
-			for (int i = from; i <= to; ++i)
-				encryptAndSend(Integer.toString(i), Prefix.DATA, true);
+			for (int i = 0 ; i < to ; ++i)
+				encryptAndSend(Float.toString(discretized[i]),Float.toString(random[i]), Prefix.DATA, true);
 
 			// Signal the end of the connection
 			socket.send("");
@@ -115,16 +119,48 @@ public class DataWorker extends Thread {
 
 	}
 
-	private void encryptAndSend(String data, Prefix prefix, boolean addTwin) throws Exception {
+	private void encryptAndSend(String data1,String data2,  Prefix prefix, boolean addTwin) throws Exception {
+
+	
+		// send the message
+		 
+		
+		//VECCHIO METODO socket.send(cipher.doFinal((prefix.getPrefix() + data).getBytes("UTF-8")), moreFlag);
+		
+		//DATO  MODIFICATO
+		socket.send ( cipher.doFinal((prefix.getPrefix() + data1).getBytes("UTF-8")), moreFlag);
+		
+		//STRINGADISKIP
+		socket.send (skip.getBytes("UTF-8"));
+		
+		//DATO REALE
+		//socket.send ( cipher.doFinal((prefix.getPrefix() + data2).getBytes("UTF-8")), moreFlag );
+		
+		
+		//System.out.println("Discretizzato  "+ prefix.getPrefix()+" " + data1+ "\tOriginale " +prefix.getPrefix() +" "+ data2 );
+		
+		// send the twin if requested and needed
+		if (addTwin && twin.neededFor(data1))
+			{
+				// VECCHIO METODO socket.send(cipher.doFinal((Prefix.TWIN.getPrefix() + data).getBytes("UTF-8")), moreFlag);
+			
+			//DATOMODIFICATO	
+			socket.send ( cipher.doFinal((prefix.TWIN.getPrefix() + data1).getBytes("UTF-8")) , moreFlag);
+			
+			//SSTRINGA DI SKIP
+			socket.send (skip.getBytes("UTF-8")); 
+			
+			//DATO REALE
+			socket.send ( cipher.doFinal((prefix.TWIN.getPrefix() + data2).getBytes("UTF-8")), moreFlag );
+			}
+	}
+	
+	private void encryptAndSendMarker(String data,Prefix prefix, boolean addTwin) throws Exception {
+
 		
 		// send the message
 		socket.send(cipher.doFinal((prefix.getPrefix() + data).getBytes("UTF-8")), moreFlag);
-
-		// send the twin if requested and needed
-		if (addTwin && twin.neededFor(data))
-			{socket.send(cipher.doFinal((Prefix.TWIN.getPrefix() + data).getBytes("UTF-8")), moreFlag);
-			//System.out.println("PREFISSO "+(Prefix.TWIN.getPrefix()+ "\t DATO "+ data));
-			}
+		
 	}
 
 	public float discretized ( float num )
@@ -142,10 +178,8 @@ public class DataWorker extends Thread {
 						}
 			}	
 			
-			System.out.println(" NUMERO "+num+"\t Intervallo "+disc[index]);
-			return disc[index];
-			
-			
+			//System.out.println(" NUMERO "+num+"\t Intervallo "+disc[index]);
+			return disc[index];			
 	}
 	
 	

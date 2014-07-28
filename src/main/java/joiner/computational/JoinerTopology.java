@@ -80,7 +80,6 @@ public class JoinerTopology extends Thread {
 		
 		while (true) {
 			byte[] message = input.recv();
-			//System.out.println("RICCARDO \t"+message );
 			
 			if (message.length == 0) {
 				++completedSpouts;

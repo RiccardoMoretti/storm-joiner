@@ -26,7 +26,7 @@ public class Demo {
 			markers.add(Integer.toString(i));
 
 		// create the twin function ( one every 10 )
-		TwinFunction twin = new HashTwinFunction(5);
+		TwinFunction twin = new HashTwinFunction(10);
 		
 		// create the data server
 		DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin);

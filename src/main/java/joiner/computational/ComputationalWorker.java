@@ -22,6 +22,7 @@ public class ComputationalWorker extends Thread {
 	private final Socket output;
 	private final int entriesHint;
 	private boolean done;
+	private boolean skip;
 	
 	public ComputationalWorker(String inputString, String outputString, int entriesHint) {
 		this.inputString = inputString;
@@ -36,6 +37,7 @@ public class ComputationalWorker extends Thread {
 		output.connect(outputString);
 		
 		done = false;
+		skip = false;
 	}
 	
 	@Override
@@ -46,20 +48,29 @@ public class ComputationalWorker extends Thread {
 			logger.info("joiner created with entriesHint: {}", entriesHint);
 
 			while (true) {
-				Bytes message = new Bytes(input.recv());
-
+				Bytes message = new Bytes(input.recv());		
+				
 				if (message.isEmpty()) {
 					output.send(message.getBytes());
 					break;
 				}
-//QUI FA IL JOINNNNNNNNN !!
-//CONTAINS è UGUALE AL METODO EQUALS
+
+/*	
+ * 				se "message" è un dato modificato allora devo fare il join usando lui
+ * 				se "message" è la stringa di skip devo leggere il messaggio reale che 
+ * 					viene dopo e se il join ( fatto sulla stringa modificata ) dava vero
+ *					allora dovevo mandare la stringa reale al client. 
+ *				Come posso fare ?					
+*/	
+					
 				
 				if (pendingKeys.contains(message)) {
-					pendingKeys.remove(message);
-					output.send(message.getBytes());
-				} else
-					pendingKeys.add(message);
+						pendingKeys.remove(message);
+						output.send(message.getBytes());
+					} else
+						pendingKeys.add(message);
+				
+			
 			}
 			
 			input.disconnect(inputString);
