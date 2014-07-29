@@ -18,10 +18,6 @@ public class Demo {
 		// create the markers 		
 		Set<String> markers = new HashSet<String>();
 		
-/* DEVO LAVORARE QUI PER FAR SI CHE I MAKERS ABBIANO SENSO
- * 
- * 
- */
 		for (int i = 0; i < 100; ++i)
 			markers.add(Integer.toString(i));
 

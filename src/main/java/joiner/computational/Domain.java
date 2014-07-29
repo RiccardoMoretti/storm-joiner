@@ -13,7 +13,7 @@ public class Domain {
 		public Domain()
 		{
 			this.min = 0;
-			this.max = 10;
+			this.max = 100;
 			this.domainSize = max - min ;
 			soglia = 1 ;
 			

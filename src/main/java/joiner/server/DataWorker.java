@@ -4,7 +4,7 @@ import java.util.Set;
 
 import javax.crypto.Cipher;
 
-import joiner.commons.Bytes;
+
 import joiner.commons.DataServerRequest;
 import joiner.commons.Prefix;
 import joiner.commons.twins.TwinFunction;
@@ -30,13 +30,16 @@ public class DataWorker extends Thread {
 	private Socket socket;
 	private float[] discretized ;
 	private float[] random;
-	private String skip ;
+	private float rand;
+	private int cont;
+	private boolean ok;
 
 	private ZContext context;
 	private boolean done = false;
 	private int from, to;
 	private Domain D ;
 	private ZipfGenerator Z;
+	private String[] sendReady;
 	
 	public DataWorker(int outputPort, DataServerRequest request, Cipher cipher, Set<String> markers, TwinFunction twin) {
 		this(outputPort, request, cipher, markers, twin, true);
@@ -48,11 +51,14 @@ public class DataWorker extends Thread {
 		this.markers = markers;
 		this.twin = twin;
 		this.moreFlag = pipeline ? 0 : ZMQ.SNDMORE;
-		D = new Domain();
-		Z = new ZipfGenerator ((int) D.getDomainSize(), 0.5 );
-		discretized = new float [Integer.parseInt(request.getColumn())];
-		random = new float [Integer.parseInt(request.getColumn())];
-		skip = "ABCMorettiRiccardo";
+		this.D = new Domain();
+		this.Z = new ZipfGenerator ((int) D.getDomainSize(), 0.5 );
+		this.discretized = new float [Integer.parseInt(request.getColumn())];
+		this.random = new float [Integer.parseInt(request.getColumn())];
+		this.rand = 0 ;
+		this.cont = 0 ;
+		this.ok = false ;
+		this.sendReady = new String[Integer.parseInt(request.getColumn())] ;
 		
 		parseRequest(request);
 	}
@@ -77,29 +83,50 @@ public class DataWorker extends Thread {
 		
 		try {
 
-// 	I DATI CHE MANDA LI MANDA IN ORDINE CASUALE, COME FACCIO A MANDARLI SEQUENZIALMENTE ?
 			// Open the output socket
 			socket.bind("tcp://*:" + outputPort);
 			logger.info("Start pushing data to port {}", outputPort);
 
-//	QUI MANDA I 100 MARKERS			
-// Send all the markers (without their twins) [TODO shuffle them with the data]
+			
+			// Send all the markers (without their twins) [TODO shuffle them with the data]
 			for (String marker: markers)
-			{	encryptAndSendMarker(marker, Prefix.MARKER, false); 
+			{	encryptAndSend(marker, marker, Prefix.MARKER, false); 
 				//System.out.println("Marker \t" + marker );	
 			}
 
-//	QUI MANDA I DATI REALI E I TWINS			
+	
+			//l'attributo di join deve essere univoco ( chiave ), 
+			// controllo che il genereatore li generi tutti diversi
+		
 			// Send the data (with the twins)
-
 			for (int i = 0 ; i < to ; ++i)
-			{	random[i] = Z.nextInt();
-				discretized[i] = this.discretized(random[i]);			
+		
+			{	
+				rand = Z.nextInt();
+				ok = false ;
+				//System.out.println("Rand\t\t " + rand );
+				
+				while ( !ok )
+				{	 cont = 0;
+		
+					for ( int j = 0 ; j < i ; j++ )
+						if ( random[j] != rand )
+								cont++;
+					
+					if ( cont == i )
+						ok = true;
+					else
+						rand = Z.nextInt() ;
+				}
+				
+				random[i] = rand ;
+				discretized[i] = this.discretized(random[i]);	
+				//System.out.println("Original\t " + random[i]+"\tDiscretized\t" + discretized[i] );
 			}
 	
 			
 			for (int i = 0 ; i < to ; ++i)
-				encryptAndSend(Float.toString(discretized[i]),Float.toString(random[i]), Prefix.DATA, true);
+				encryptAndSend( Float.toString(discretized[i]),Float.toString(random[i]), Prefix.DATA, true);
 
 			// Signal the end of the connection
 			socket.send("");
@@ -119,48 +146,19 @@ public class DataWorker extends Thread {
 
 	}
 
-	private void encryptAndSend(String data1,String data2,  Prefix prefix, boolean addTwin) throws Exception {
 
-	
+
+	private void encryptAndSend(String dataDisc, String dataReal, Prefix prefix, boolean addTwin) throws Exception {
+
+		
 		// send the message
-		 
-		
-		//VECCHIO METODO socket.send(cipher.doFinal((prefix.getPrefix() + data).getBytes("UTF-8")), moreFlag);
-		
-		//DATO  MODIFICATO
-		socket.send ( cipher.doFinal((prefix.getPrefix() + data1).getBytes("UTF-8")), moreFlag);
-		
-		//STRINGADISKIP
-		socket.send (skip.getBytes("UTF-8"));
-		
-		//DATO REALE
-		//socket.send ( cipher.doFinal((prefix.getPrefix() + data2).getBytes("UTF-8")), moreFlag );
-		
-		
-		//System.out.println("Discretizzato  "+ prefix.getPrefix()+" " + data1+ "\tOriginale " +prefix.getPrefix() +" "+ data2 );
+		socket.send(cipher.doFinal((prefix.getPrefix() + dataDisc).getBytes("UTF-8"))+"\t"+cipher.doFinal((prefix.getPrefix() + dataReal).getBytes("UTF-8")), moreFlag);
 		
 		// send the twin if requested and needed
-		if (addTwin && twin.neededFor(data1))
-			{
-				// VECCHIO METODO socket.send(cipher.doFinal((Prefix.TWIN.getPrefix() + data).getBytes("UTF-8")), moreFlag);
-			
-			//DATOMODIFICATO	
-			socket.send ( cipher.doFinal((prefix.TWIN.getPrefix() + data1).getBytes("UTF-8")) , moreFlag);
-			
-			//SSTRINGA DI SKIP
-			socket.send (skip.getBytes("UTF-8")); 
-			
-			//DATO REALE
-			socket.send ( cipher.doFinal((prefix.TWIN.getPrefix() + data2).getBytes("UTF-8")), moreFlag );
-			}
-	}
-	
-	private void encryptAndSendMarker(String data,Prefix prefix, boolean addTwin) throws Exception {
-
-		
-		// send the message
-		socket.send(cipher.doFinal((prefix.getPrefix() + data).getBytes("UTF-8")), moreFlag);
-		
+		if (addTwin && twin.neededFor(dataReal))
+		{
+			socket.send(cipher.doFinal((Prefix.TWIN.getPrefix() + dataDisc).getBytes("UTF-8"))+"\t"+cipher.doFinal((Prefix.TWIN.getPrefix() + dataReal).getBytes("UTF-8")), moreFlag);
+		}
 	}
 
 	public float discretized ( float num )

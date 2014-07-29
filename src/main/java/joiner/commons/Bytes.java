@@ -20,6 +20,7 @@ public class Bytes {
     	return bytes.length == 0;
     }
     
+    
     @Override
     public boolean equals(Object other) {
         if (!(other instanceof Bytes))

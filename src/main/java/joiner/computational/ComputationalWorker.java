@@ -1,10 +1,10 @@
 package joiner.computational;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 import joiner.commons.Bytes;
+import joiner.commons.DataServerRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,6 @@ public class ComputationalWorker extends Thread {
 	private final Socket output;
 	private final int entriesHint;
 	private boolean done;
-	private boolean skip;
 	
 	public ComputationalWorker(String inputString, String outputString, int entriesHint) {
 		this.inputString = inputString;
@@ -37,45 +36,80 @@ public class ComputationalWorker extends Thread {
 		output.connect(outputString);
 		
 		done = false;
-		skip = false;
 	}
 	
 	@Override
 	public void run() {
 		try {
 
-			Set<Bytes> pendingKeys = new HashSet<Bytes>(entriesHint);
+			//Set<Bytes> pendingKeys = new HashSet<Bytes>(entriesHint);
+			String[] discretized = new String[entriesHint];
+			String[] reals = new String[entriesHint];
+			int i = 0 ;
+			boolean last = false;
+			
 			logger.info("joiner created with entriesHint: {}", entriesHint);
 
 			while (true) {
-				Bytes message = new Bytes(input.recv());		
 				
-				if (message.isEmpty()) {
+				Bytes message = new Bytes(input.recv());	
+				
+				if (message.isEmpty())
+				{
+					last = true;
 					output.send(message.getBytes());
+					System.out.println("INTER MILANO");
 					break;
 				}
-
-/*	
- * 				se "message" è un dato modificato allora devo fare il join usando lui
- * 				se "message" è la stringa di skip devo leggere il messaggio reale che 
- * 					viene dopo e se il join ( fatto sulla stringa modificata ) dava vero
- *					allora dovevo mandare la stringa reale al client. 
- *				Come posso fare ?					
-*/	
 					
 				
-				if (pendingKeys.contains(message)) {
+				String forSplit = message.toString();
+				
+				String[] parts = forSplit.split("\t");
+				System.out.println( "PART[0]\t"+parts[0]+"\tPART[1]\t"+parts[1]);
+				
+				if ( !last )
+				{	System.out.println("SONO QUI \t SONO QUI");
+					discretized[i] = parts[0];
+					reals[i] = parts[1];
+					i++;
+				}
+				
+				else
+				{	System.out.println("CACCA");
+					for ( int j = 0 ; j < i ; j++ )
+					{	System.out.println("\t"+discretized[j]+"\t"+parts[0]);
+						if ( discretized[j].equals(parts[0]) )
+							{
+								output.send((reals[j]+"\t"+parts[1]).getBytes());					
+								System.out.println("\t"+discretized[j]+"\t"+parts[0]);
+							}
+					}
+				
+				}
+				//Bytes disc = new Bytes (  parts[0].getBytes("UTF-8") );
+				//Bytes real = new Bytes ( parts[1].getBytes("UTF-8" ) );
+				
+				
+			
+				
+				
+			
+			/*	VECCHIO FUNZIONANTE
+			 
+			  if (pendingKeys.contains(message)) {
+			 
 						pendingKeys.remove(message);
 						output.send(message.getBytes());
 					} else
 						pendingKeys.add(message);
-				
+				*/
 			
 			}
 			
 			input.disconnect(inputString);
 			
-			pendingKeys = null;
+			//pendingKeys = null;
 			System.gc();
 			
 			while (!done)
