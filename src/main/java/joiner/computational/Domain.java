@@ -13,9 +13,19 @@ public class Domain {
 		public Domain()
 		{
 			this.min = 0;
-			this.max = 100;
+			this.max = 1000;
 			this.domainSize = max - min ;
-			soglia = 1 ;
+			soglia = 5 ;
+			
+			CreateRange();
+		}
+		
+		public Domain(float min, float max, float soglia)
+		{
+			this.min = min;
+			this.max = max;
+			this.domainSize = max - min ;
+			this.soglia = soglia ;
 			
 			CreateRange();
 		}

@@ -22,61 +22,22 @@ import org.zeromq.ZMQ.Socket;
 
 public class DataServer extends Thread {
 
-/* A Logger object is used to log messages for a specific system or application 
- * 	component. Loggers are normally named, using a hierarchical dot-separated 
- * 	namespace. Logger names can be arbitrary strings, but they should normally 
- * 	be based on the package name or class name of the logged component
- * Logger objects may be obtained by calls on one of the getLogger factory methods. 
-*/
 	private final static Logger logger = LoggerFactory.getLogger(DataServer.class);
 	
 	private final int helloPort;
-	
-/* A Set is a Collection that cannot contain duplicate elements.
- *  It models the mathematical set abstraction. The Set interface contains 
- *  only methods inherited from Collection and adds the restriction that
- *  duplicate elements are prohibited. 
- * Set also adds a stronger contract on the behavior of the equals and 
- * hashCode operations, allowing Set instances to be compared meaningfully 
- * even if their implementation types differ. 
- * Two Set instances are equal if they contain the same elements.
-*/
 	private final Set<String> markers;
 	
 	private final TwinFunction twin;	
 	private final boolean pipeline;
-	
 	private int lastUsedPort;
-
-//	This class implements client sockets (also called just "sockets"). 
-//	A socket is an endpoint for communication between two machines.
 	private Socket helloSocket;
 
-/* This class provides the functionality of a cryptographic cipher 
- * 	for encryption and decryption. It forms the core of the Java 
- * 	Cryptographic Extension (JCE) framework.
- * In order to create a Cipher object, the application calls the 
- *  Cipher's getInstance method, and passes the name of the requested 
- *  transformation to it. 
- * A transformation is a string that describes the operation 
- *  (or set of operations) to be performed on the given input, 
- *  to produce some output. A transformation always includes the name
- *  of a cryptographic algorithm (e.g., DES), and may be followed by a
- *  feedback mode and padding scheme.
-*/
+
 	private Cipher cipher;
 
-/* A Map is an object that maps keys to values. 
- * A map cannot contain duplicate keys: Each key can map to at most one value. 
-*/
+
 	private Map<Integer, DataWorker> workers;
-	
-/* ZContext provides a high-level ZeroMQ context management class.
- * It manages open sockets in the context and automatically closes 
- * 	these before terminating the context. 
- * It provides a simple way to set the linger timeout on sockets, 
- *	 and configure contexts for number of I/O threads.
-*/
+
 	private ZContext context;
 	private int last = -1;
 	
@@ -153,12 +114,13 @@ public class DataServer extends Thread {
 		logger.info("Received request: {}", request);
 		int port = ++lastUsedPort;
 		
-		DataWorker worker = new DataWorker(lastUsedPort, request, cipher, markers, twin, pipeline);
+		DataWorker worker = new DataWorker(lastUsedPort, request, cipher, markers, twin, pipeline, 2*lastUsedPort);
 		helloSocket.send(port + " " + worker.getRecordsHint());
 		
 		worker.start();
 		workers.put(port, worker);
 	}
+	
 	
 	private void closeSocket(int port) throws InterruptedException {
 		logger.info("Received done for port: {}", port);

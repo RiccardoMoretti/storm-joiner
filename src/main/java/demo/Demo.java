@@ -1,5 +1,10 @@
 package demo;
 
+//GESTIONE DIVERSA DISCRETIZZAZIONE DUE ARRAY S R
+//GESTIONE JOIN IN CLASSE COMPUTATIONAL WORKER IN CASO DI DATI NON UNIVOCI
+//COMUNICAZIONE CLIENT DATASERVE PER COMBINAZIONE DATI FINALI
+
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,10 +43,9 @@ public class Demo {
 		Client client = new Client("ThisIsASecretKey", markers, twin);
 		client.connect("tcp://127.0.0.1:5555");
 
-		DataServerConnector sc1 = new DataServerConnector("tcp://127.0.0.1:3000", "1", "50");
-		DataServerConnector sc2 = new DataServerConnector("tcp://127.0.0.1:3000", "1", "50");
+		DataServerConnector sc1 = new DataServerConnector("tcp://127.0.0.1:3000", "1", "250" );
+		DataServerConnector sc2 = new DataServerConnector("tcp://127.0.0.1:3000", "1", "375" );
 	
-
 		client.join( sc1, sc2 );
 		client.destroy();
 	}

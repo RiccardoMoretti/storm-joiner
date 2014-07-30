@@ -30,13 +30,13 @@ public class DataWorker extends Thread {
 	private final int moreFlag;
 	private Socket socket;
 	private Socket socketClient;
+	private String received[];
 
 	private float[] discretized ;
-	private String forSend[];
 	private float[] random;
 	private float rand;
 	private int cont;
-	private int y ;
+	private int y;
 	private boolean ok;
 
 	private ZContext context;
@@ -45,12 +45,13 @@ public class DataWorker extends Thread {
 	private int from, to;
 	private Domain D ;
 	private ZipfGenerator Z;
+
 	
-	public DataWorker(int outputPort, DataServerRequest request, Cipher cipher, Set<String> markers, TwinFunction twin) {
-		this(outputPort, request, cipher, markers, twin, true);
+	public DataWorker(int outputPort, DataServerRequest request, Cipher cipher, Set<String> markers, TwinFunction twin, int port) {
+		this(outputPort, request, cipher, markers, twin, true, port);
 	}
 
-	public DataWorker(int outputPort, DataServerRequest request, Cipher cipher, Set<String> markers, TwinFunction twin, boolean pipeline) {
+	public DataWorker(int outputPort, DataServerRequest request, Cipher cipher, Set<String> markers, TwinFunction twin, boolean pipeline, int port) {
 		this.outputPort = outputPort;
 		this.cipher = cipher;
 		this.markers = markers;
@@ -60,12 +61,12 @@ public class DataWorker extends Thread {
 		this.Z = new ZipfGenerator ((int) D.getDomainSize(), 0.5 );
 		this.discretized = new float [Integer.parseInt(request.getColumn())];
 		this.random = new float [Integer.parseInt(request.getColumn())];
-		this.forSend = new String[Integer.parseInt(request.getColumn())];
+		this.received = new String [1000000];
 		this.rand = 0 ;
 		this.cont = 0 ;	
 		this.ok = false ;
-		
-
+		this.y= 0;
+		this.portClient = port;
 		
 		parseRequest(request);
 	}
@@ -160,7 +161,12 @@ public class DataWorker extends Thread {
 		System.out.println( "\t\tRELAZIONE");
 		for ( int u = 0 ; u < to ; u++ )
 			System.out.println( "DISCRETIZZATO\t"+discretized[u]+"\tORIGINALE\t"+random[u]);
-		Combine();
+		
+		initClientDataServer();
+		receiveRequest();
+	
+		respondeRequest();
+
 	}
 
 
@@ -201,57 +207,45 @@ public class DataWorker extends Thread {
 	public void done() {
 		done = true;
 	}
-
-	private void Combine()
+	
+	private void initClientDataServer()
 	{
-				portClient = 5556;
-				contextClient = new ZContext();
-				socketClient = contextClient.createSocket(ZMQ.PAIR);
-				socketClient.connect("tcp://localhost:" + portClient );
 
-				//while ( true )
+		contextClient = new ZContext();
+		socketClient = contextClient.createSocket(ZMQ.PAIR);
+		socketClient.connect("tcp://localhost:" + portClient );
+	}
+
+	private void receiveRequest()
+	{
+		
+			while ( true )
 					{
 					
 					Bytes msg = new Bytes ( socketClient.recv() );
-			    	System.out.println("RICEVUTO DATA "+msg.toString());
-				    socketClient.send("client message to server1");
-				    socketClient.send("client message to server2");
-				    //time.sleep(1);
-		
-		
-		/*	for ( int q = 0 ; q < to ; q++)
-				if ( Float.toString(discretized[q]).equals(message.toString()))
-					{ forSend[y]=Float.toString(random[q])+"\t"+ Float.toString(discretized[q]);
-					  y++;	
-					}		*/
-		}}
-		
-		/*
-		 * 
-		 * outputPort = 5556 ;
-				contextClientOutput = new ZContext();
-				socketClientOutput = contextClientOutput.createSocket(ZMQ.PAIR);
-				socketClientOutput.bind("tcp://*:" + outputPort);
-
-				while ( true ) {
-					System.out.println("\tCLIENT RICHIEDE\t"+payload);
-				    socketClientOutput.send(payload);
-				    Bytes msg = new Bytes ( socketClientOutput.recv() );
-				    System.out.println("RICEVUTO "+msg.toString());
-				   
-
+					
+					if (msg.isEmpty())
+					{						
+						break;						
+					}			    	
+					received[y] = msg.toString();
+					y++;
+					//System.out.println(" RICHIESTO\t "+msg.toString());
 				    
-				   // time.sleep(1);
-				}
-		 */
-		
-		//socketClientInput.disconnect();
-		
-				
-		
-	
-	
+					
+				  
+		}}
 
+	private void respondeRequest()
+	{	  
+			for ( int k = 0 ; k < y ; k++ )
+					for ( int q = 0 ; q < to ; q++)
+						if ( received[k].equals(Float.toString(discretized[q]))) 					  
+						  socketClient.send(Float.toString(random[q])+"\t"+ Float.toString(discretized[q]));
+							
+			socketClient.send("");
+	}
+	
 	@Override
 	protected void finalize() throws Throwable {
 		context.destroy();

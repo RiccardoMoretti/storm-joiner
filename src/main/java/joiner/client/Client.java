@@ -11,7 +11,6 @@ import javax.crypto.spec.SecretKeySpec;
 import joiner.commons.Bytes;
 import joiner.commons.DataServerConnector;
 import joiner.commons.Prefix;
-import joiner.commons.twins.HashTwinFunction;
 import joiner.commons.twins.TwinFunction;
 
 import org.slf4j.Logger;
@@ -20,36 +19,38 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQ.Socket;
 
-/* This class represents an observable object, or "data" in 
- * 	the model-view paradigm. 
- * It can be subclassed to represent an object that the application wants 
- * 	to have observed. 
- * An observable object can have one or more observers. An observer may be
- *  any object that implements interface Observer. After an observable 
- *  instance changes, an application calling the Observable's notifyObservers 
- *  method causes all of its observers to be notified of the change 
- *  by a call to their update method.
-*/
-
 public class Client extends Observable {
 	
 	private final static Logger logger = LoggerFactory.getLogger(Client.class);
 	
 	private final ZContext context;
-	private ZContext contextClientOutput;
+	private ZContext contextDataServer1;
+	private ZContext contextDataServer2;
 	
+
 	private final Socket socket;
-	private Socket socketClientOutput;
+	private Socket  socketDataServer1;
+	private Socket  socketDataServer2;
 	private final Cipher cipher;
 	
 	private final Set<String> markers;
 	private final TwinFunction twin;
+	private String received1[] ;
+	private String received2[] ;
+	private int y ;
+	private int g ;
+	private int dataOK ;
+	private String joinOK[] ;
+	private float rcv1[];
+	private float rcv2[];
+	
 	
 	private Set<String> pendingTwins;
 	private Set<String> pendingMarkers;
 	private int receivedData;
 	private int receivedTwins;
-	private int outputPort;
+	private int outputPort1;
+	private int outputPort2;
 	private String request[];
 	private int i;
 	
@@ -61,11 +62,16 @@ public class Client extends Observable {
 		this.socket = context.createSocket(ZMQ.PAIR);
 		this.socket.setHWM(100000000);
 		this.socket.setLinger(-1);
-		
-		
-		this.outputPort = 3333 ;
 		this.i = 0 ;
-		this.request = new String[1000];
+		this.request = new String[1000000];
+		this.received1 = new String[1000000];
+		this.received2 = new String[1000000];
+		this.rcv1 = new float[1000000];
+		this.rcv2 = new float[1000000];
+		this.y = 0 ;
+		this.g = 0 ;
+		this.dataOK = 0;
+		this.joinOK = new String[1000000];
 	}
 	
 	private Cipher createCipher(String key) throws Exception {
@@ -105,16 +111,27 @@ public class Client extends Observable {
 		}
 		
 		socket.send("ACK");	
-		validateResult();
-		
-		
+				
+		initClientDataServer1();
+		initClientDataServer2();
 		
 		for ( int u = 0 ; u < receivedData ; u++ )
-			{ System.out.println( "\tDA RICHIEDERE\t"+request[u]); 
+			{// System.out.println( "\tDA RICHIEDERE\t"+request[u]); 
+			  requestData1(request[u]);
+			  requestData2(request[u]);
 			  
 			}
-		CombineData(request[6]);
+		requestData1("");
+		requestData2("");
+		receiveRequestData1();	
+		receiveRequestData2();
 		
+		socketDataServer1.close();
+		socketDataServer2.close();
+		
+		
+		validateResult();
+		checkSpuriosTuple();
 	}
 	
 	private void sendDataConnectors(DataServerConnector[] connectors) {
@@ -142,8 +159,7 @@ public class Client extends Observable {
 		case DATA:
 			logger.debug("match: {}", payload);
 			++receivedData;
-			System.out.println(" PREFISSO : "+prefix+"\tPAYLOAD : "+payload);
-			//requestData(payload);
+			//System.out.println(" PREFISSO : "+prefix+"\tPAYLOAD : "+payload);
 			request[i]= payload;
 			i++;
 				
@@ -184,6 +200,38 @@ public class Client extends Observable {
 		
 		return valid;
 	}
+	
+	private void checkSpuriosTuple() {
+	
+		String temp[];
+		temp = new String[2];
+		System.out.println("RICCARDO"+received1[2]);
+	//	String[] parts = received1[2].split("\t");
+		
+	/*	for ( int r = 0 ; r < y ; r++ )
+		{	String[] parts = received1[r].split("\t");
+			rcv1[r] = Float.valueOf( parts[0]);
+			
+		}
+			
+			
+		for ( int m = 0 ; m < g ; m++ )
+			
+		{	
+			String[] parts = received2[m].split("\t");
+			rcv2[m] = Float.valueOf( parts[0]);
+		}	
+		
+		for ( int r = 0 ; r < y ; r++ )
+				for ( int m = 0 ; m < g ; m++ )
+					if ( Math.abs( rcv1[r] - rcv2[m] ) <= 5 )
+						dataOK++;
+			logger.info("TUPLE CORRETTE : {}", dataOK);
+			logger.info("TUPLE DI TROPPO : {}", receivedData - dataOK);
+			logger.info("PERCENTUALE TUPLE DI TROPPO: {}", ((receivedData - dataOK)/receivedData ));
+			
+		*/
+	}
 
 	private boolean validateMarkers() {
 		logger.info("{} matched markers", markers.size() - pendingMarkers.size());
@@ -204,61 +252,67 @@ public class Client extends Observable {
 			set.add(elem);
 	}
 	
-	private void CombineData(String payload)
-	{				
+	
+	private void initClientDataServer1()
+	{
+		outputPort1 = 6002 ;
+		contextDataServer1 = new ZContext();
+		socketDataServer1 = contextDataServer1.createSocket(ZMQ.PAIR);
+		socketDataServer1.bind("tcp://*:" + outputPort1);
 		
-				outputPort = 5556 ;
-				contextClientOutput = new ZContext();
-				socketClientOutput = contextClientOutput.createSocket(ZMQ.PAIR);
-				socketClientOutput.bind("tcp://*:" + outputPort);
-
-				//while ( true ) {
-					//System.out.println("\tCLIENT RICHIEDE\t"+payload);
-				    socketClientOutput.send("prova payload");
-				    Bytes msg = new Bytes ( socketClientOutput.recv() );
-				    System.out.println("RICEVUTO ");
-				   
-
-				    
-				   // time.sleep(1);
-			//	}
-				
-				
-				//socketClientOutput.send(payload.getBytes());
 	}
 	
-	public static void main(String[] args) {
-		// example: ThisIsASecretKey tcp://127.0.0.1:5555 tcp://127.0.0.1:3000 1 10000 tcp://127.0.0.1:3000 8000 20000 10 0 1 2 3 4 5 6 7 8 9
-		
-		if (args.length < 9) {
-			logger.error("args: cipherKey csString sc1String table1 col1 sc2String table2 col2 oneTwinEvery markers...");
-			System.exit(1);
-		}
-		
-		int index = 0;
-		String cipherKey = args[index++];
-		String csString = args[index++];
-		
-		DataServerConnector sc1 = new DataServerConnector(args[index++], args[index++], args[index++]);
-		DataServerConnector sc2 = new DataServerConnector(args[index++], args[index++], args[index++]);
-		
-		int oneTwinEvery = Integer.parseInt(args[index++]);
-		TwinFunction twin = new HashTwinFunction(oneTwinEvery);
-		
-		Set<String> markers = new HashSet<String>();
-		for (int i = index; i < args.length; ++i)
-			markers.add(args[i]);
-		
-		try {
-			Client client = new Client(cipherKey, markers, twin);
-			client.connect(csString);
-			client.join(sc1, sc2);
-			client.destroy();
-			
-		} catch (Exception e) {
-			logger.error("Server error");
-			e.printStackTrace();
-		}
+	private void requestData1(String payload)
+	{							
+				    socketDataServer1.send(payload);
 	}
+	
+	private void receiveRequestData1()
+	{
+		while ( true )
+			{
+		
+				Bytes msg = new Bytes ( socketDataServer1.recv() );
+		
+				if (msg.isEmpty())
+					{
+						break;
+					}	
+    	
+				received1[y] = msg.toString();
+				System.out.println(" DATA SERVER 1\t "+	received1[y] );
+				g++;		
+	}}
+	
+	private void initClientDataServer2()
+	{
+		outputPort2 = 6004 ;
+		contextDataServer2 = new ZContext();
+		socketDataServer2 = contextDataServer2.createSocket(ZMQ.PAIR);
+		socketDataServer2.bind("tcp://*:" + outputPort2);
+		
+	}
+	
+	private void requestData2(String payload)
+	{							
+				    socketDataServer2.send(payload);
+	}
+	
+	private void receiveRequestData2()
+	{
+		while ( true )
+			{
+		
+				Bytes msg = new Bytes ( socketDataServer2.recv() );
+		
+				if (msg.isEmpty())
+					{
+						break;
+					}	
+    	
+				received2[y] = msg.toString();
+				System.out.println(" DATA SERVER 2\t "+msg.toString());
+				y++;		
+	}}
 
 }
