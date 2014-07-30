@@ -8,6 +8,7 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import joiner.commons.Bytes;
 import joiner.commons.DataServerConnector;
 import joiner.commons.Prefix;
 import joiner.commons.twins.HashTwinFunction;
@@ -35,7 +36,10 @@ public class Client extends Observable {
 	private final static Logger logger = LoggerFactory.getLogger(Client.class);
 	
 	private final ZContext context;
+	private ZContext contextClientOutput;
+	
 	private final Socket socket;
+	private Socket socketClientOutput;
 	private final Cipher cipher;
 	
 	private final Set<String> markers;
@@ -45,6 +49,9 @@ public class Client extends Observable {
 	private Set<String> pendingMarkers;
 	private int receivedData;
 	private int receivedTwins;
+	private int outputPort;
+	private String request[];
+	private int i;
 	
 	public Client(String key, Set<String> markers, TwinFunction twin) throws Exception {
 		this.cipher = createCipher(key);
@@ -54,6 +61,11 @@ public class Client extends Observable {
 		this.socket = context.createSocket(ZMQ.PAIR);
 		this.socket.setHWM(100000000);
 		this.socket.setLinger(-1);
+		
+		
+		this.outputPort = 3333 ;
+		this.i = 0 ;
+		this.request = new String[1000];
 	}
 	
 	private Cipher createCipher(String key) throws Exception {
@@ -75,8 +87,7 @@ public class Client extends Observable {
 		
 		// send the connectors to the computational server
 		sendDataConnectors(connectors);
-		
-		
+				
 		// initialize the data structures
 		pendingMarkers = new HashSet<String>(markers);
 		pendingTwins = new HashSet<String>();
@@ -93,8 +104,17 @@ public class Client extends Observable {
 			processMessage(bytes);
 		}
 		
-		socket.send("ACK");
+		socket.send("ACK");	
 		validateResult();
+		
+		
+		
+		for ( int u = 0 ; u < receivedData ; u++ )
+			{ System.out.println( "\tDA RICHIEDERE\t"+request[u]); 
+			  
+			}
+		CombineData(request[6]);
+		
 	}
 	
 	private void sendDataConnectors(DataServerConnector[] connectors) {
@@ -122,6 +142,11 @@ public class Client extends Observable {
 		case DATA:
 			logger.debug("match: {}", payload);
 			++receivedData;
+			System.out.println(" PREFISSO : "+prefix+"\tPAYLOAD : "+payload);
+			//requestData(payload);
+			request[i]= payload;
+			i++;
+				
 			
 			if (twin.neededFor(payload))
 				xorSet(pendingTwins, payload);
@@ -151,7 +176,9 @@ public class Client extends Observable {
 		boolean valid = validateMarkers() & validateTwins();
 		
 		if (valid)
-			logger.info("RESULT VALID. #RECEIVED: {}", receivedData);
+			{ logger.info("RESULT VALID. #RECEIVED: {}", receivedData);
+				
+			}
 		else
 			logger.info("RESULT NOT VALID. #RECEIVED: {}", receivedData);
 		
@@ -175,6 +202,29 @@ public class Client extends Observable {
 			set.remove(elem);
 		else
 			set.add(elem);
+	}
+	
+	private void CombineData(String payload)
+	{				
+		
+				outputPort = 5556 ;
+				contextClientOutput = new ZContext();
+				socketClientOutput = contextClientOutput.createSocket(ZMQ.PAIR);
+				socketClientOutput.bind("tcp://*:" + outputPort);
+
+				//while ( true ) {
+					//System.out.println("\tCLIENT RICHIEDE\t"+payload);
+				    socketClientOutput.send("prova payload");
+				    Bytes msg = new Bytes ( socketClientOutput.recv() );
+				    System.out.println("RICEVUTO ");
+				   
+
+				    
+				   // time.sleep(1);
+			//	}
+				
+				
+				//socketClientOutput.send(payload.getBytes());
 	}
 	
 	public static void main(String[] args) {

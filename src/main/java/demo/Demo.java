@@ -41,7 +41,8 @@ public class Demo {
 		DataServerConnector sc1 = new DataServerConnector("tcp://127.0.0.1:3000", "1", "50");
 		DataServerConnector sc2 = new DataServerConnector("tcp://127.0.0.1:3000", "1", "50");
 	
-		client.join(sc1, sc2);
+
+		client.join( sc1, sc2 );
 		client.destroy();
 	}
 	

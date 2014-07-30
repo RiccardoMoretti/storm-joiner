@@ -42,11 +42,11 @@ public class ComputationalWorker extends Thread {
 	public void run() {
 		try {
 
-			//Set<Bytes> pendingKeys = new HashSet<Bytes>(entriesHint);
-			String[] discretized = new String[entriesHint];
+			Set<Bytes> pendingKeys = new HashSet<Bytes>(entriesHint);
+			/*String[] discretized = new String[entriesHint];
 			String[] reals = new String[entriesHint];
 			int i = 0 ;
-			boolean last = false;
+			boolean last = false;*/
 			
 			logger.info("joiner created with entriesHint: {}", entriesHint);
 
@@ -56,14 +56,13 @@ public class ComputationalWorker extends Thread {
 				
 				if (message.isEmpty())
 				{
-					last = true;
+					//last = true;
 					output.send(message.getBytes());
-					System.out.println("INTER MILANO");
 					break;
 				}
 					
 				
-				String forSplit = message.toString();
+			/*	String forSplit = message.toString();
 				
 				String[] parts = forSplit.split("\t");
 				System.out.println( "PART[0]\t"+parts[0]+"\tPART[1]\t"+parts[1]);
@@ -76,7 +75,7 @@ public class ComputationalWorker extends Thread {
 				}
 				
 				else
-				{	System.out.println("CACCA");
+				{	
 					for ( int j = 0 ; j < i ; j++ )
 					{	System.out.println("\t"+discretized[j]+"\t"+parts[0]);
 						if ( discretized[j].equals(parts[0]) )
@@ -91,11 +90,11 @@ public class ComputationalWorker extends Thread {
 				//Bytes real = new Bytes ( parts[1].getBytes("UTF-8" ) );
 				
 				
-			
+			*/
 				
 				
 			
-			/*	VECCHIO FUNZIONANTE
+				//VECCHIO FUNZIONANTE
 			 
 			  if (pendingKeys.contains(message)) {
 			 
@@ -103,7 +102,7 @@ public class ComputationalWorker extends Thread {
 						output.send(message.getBytes());
 					} else
 						pendingKeys.add(message);
-				*/
+				
 			
 			}
 			
