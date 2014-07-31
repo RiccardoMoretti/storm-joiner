@@ -13,9 +13,9 @@ public class Domain {
 		public Domain()
 		{
 			this.min = 0;
-			this.max = 1000;
+			this.max = 20;
 			this.domainSize = max - min ;
-			soglia = 5 ;
+			soglia = 1 ;
 			
 			CreateRange();
 		}
@@ -71,6 +71,9 @@ public class Domain {
 		
 		public int getN()
 		{	return this.n ;	}
+		
+		public float getSoglia()
+		{	return this.soglia ;	}
 		
 		public float getMin()
 		{	return this.min ;	}

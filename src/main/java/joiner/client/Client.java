@@ -37,13 +37,18 @@ public class Client extends Observable {
 	private final TwinFunction twin;
 	private String received1[] ;
 	private String received2[] ;
+	private String joinOK[];
+	private String joinSpurious[];
 	private int y ;
 	private int g ;
-	private int dataOK ;
-	private String joinOK[] ;
-	private float rcv1[];
-	private float rcv2[];
-	
+	private int dataSpur;
+	private int joinResult ;
+	private int dataReal;
+	private float rcv1Real[];
+	private float rcv2Real[];
+	private float rcv1Disc[];
+	private float rcv2Disc[];
+	private boolean eq;
 	
 	private Set<String> pendingTwins;
 	private Set<String> pendingMarkers;
@@ -66,12 +71,19 @@ public class Client extends Observable {
 		this.request = new String[1000000];
 		this.received1 = new String[1000000];
 		this.received2 = new String[1000000];
-		this.rcv1 = new float[1000000];
-		this.rcv2 = new float[1000000];
+		this.rcv1Real = new float[1000000];
+		this.rcv2Real = new float[1000000];
+		this.rcv1Disc = new float[1000000];
+		this.rcv2Disc = new float[1000000];
 		this.y = 0 ;
 		this.g = 0 ;
-		this.dataOK = 0;
-		this.joinOK = new String[1000000];
+		this.joinResult = 0;
+		this.dataReal = 0 ;
+		this.joinOK = new String[1000000] ;
+		this.joinSpurious = new String [ 1000000 ];
+		this.dataSpur = 0 ;
+		this.eq = false;
+
 	}
 	
 	private Cipher createCipher(String key) throws Exception {
@@ -111,27 +123,28 @@ public class Client extends Observable {
 		}
 		
 		socket.send("ACK");	
-				
+						
 		initClientDataServer1();
 		initClientDataServer2();
 		
-		for ( int u = 0 ; u < receivedData ; u++ )
-			{// System.out.println( "\tDA RICHIEDERE\t"+request[u]); 
+		
+		for ( int u = 0 ; u < i ; u++ )
+			{ //System.out.println( "\tDA RICHIEDERE\t"+request[u]); 
 			  requestData1(request[u]);
-			  requestData2(request[u]);
-			  
+			  requestData2(request[u]);			  
 			}
+		
 		requestData1("");
 		requestData2("");
+		
 		receiveRequestData1();	
 		receiveRequestData2();
 		
 		socketDataServer1.close();
 		socketDataServer2.close();
 		
-		
-		validateResult();
 		checkSpuriosTuple();
+		validateResult();
 	}
 	
 	private void sendDataConnectors(DataServerConnector[] connectors) {
@@ -148,7 +161,6 @@ public class Client extends Observable {
 		// split the message in its prefix and its payload
 		Prefix prefix = Prefix.of(message.charAt(0));
 		String payload = message.substring(1);
-		
 		// process the prefix and the payload
 		process(prefix, payload);
 	}
@@ -159,10 +171,24 @@ public class Client extends Observable {
 		case DATA:
 			logger.debug("match: {}", payload);
 			++receivedData;
-			//System.out.println(" PREFISSO : "+prefix+"\tPAYLOAD : "+payload);
-			request[i]= payload;
-			i++;
-				
+			eq = false;
+			//System.out.println(" PREFIX : "+prefix+"\tPAYLOAD : "+payload);
+			if ( receivedData == 1 )
+			{
+				request[i]= payload;
+				i++;
+			}
+			else 
+			{
+				for ( int r = 0 ; r < i ; r++ )
+					if ( payload.equals(request[r]))
+						eq= true;
+				if ( !eq )
+				{
+					request[i]= payload;
+					i++;
+				}	
+			}
 			
 			if (twin.neededFor(payload))
 				xorSet(pendingTwins, payload);
@@ -187,50 +213,47 @@ public class Client extends Observable {
 		}
 	}
 	
-	private boolean validateResult() {
-		// prevent short-circuit evaluation
-		boolean valid = validateMarkers() & validateTwins();
-		
-		if (valid)
-			{ logger.info("RESULT VALID. #RECEIVED: {}", receivedData);
-				
-			}
-		else
-			logger.info("RESULT NOT VALID. #RECEIVED: {}", receivedData);
-		
-		return valid;
-	}
 	
 	private void checkSpuriosTuple() {
-	
-		String temp[];
-		temp = new String[2];
-		System.out.println("RICCARDO"+received1[2]);
-	//	String[] parts = received1[2].split("\t");
+					
+		for ( int r = 0 ; r < g ; r++ )
+			{ 
+				rcv1Real[r] = Float.valueOf( received1[r].split("\t")[0]);
+				rcv1Disc[r] = Float.valueOf( received1[r].split("\t")[1]);
+				//System.out.println("\tREALE :"+rcv1Real[r]+"\tDISC :"+rcv1Disc[r]);
+			}
+			
+		System.out.println("\t");
+		for ( int m = 0 ; m < y ; m++ )			
+			{ 
+				rcv2Real[m] = Float.valueOf(received2[m].split("\t")[0]);
+				rcv2Disc[m] = Float.valueOf(received2[m].split("\t")[1]);
+				//System.out.println("\tREALE :"+rcv2Real[m]+"\tDISC :"+rcv2Disc[m]);
+			}
 		
-	/*	for ( int r = 0 ; r < y ; r++ )
-		{	String[] parts = received1[r].split("\t");
-			rcv1[r] = Float.valueOf( parts[0]);
-			
-		}
-			
-			
-		for ( int m = 0 ; m < g ; m++ )
-			
-		{	
-			String[] parts = received2[m].split("\t");
-			rcv2[m] = Float.valueOf( parts[0]);
-		}	
+		for ( int r = 0 ; r < g ; r++ )
+			for ( int m = 0 ; m < y ; m++ )
+				{ 
+					if ( rcv1Disc[r] == rcv2Disc[m] )
+						{ 
+						  joinResult++;
+						  if ( Math.abs(rcv1Real[r] -rcv2Real[m]) <= 1)
+							{ //System.out.println("Reale\t"+rcv1Real[r]+"\t"+rcv2Real[m]);
+							  joinOK[dataReal] = rcv1Real[r]+"\t"+rcv2Real[m];
+							  dataReal++;
+							}
+						  else
+						  {	  joinSpurious[dataSpur] = rcv1Real[r]+"\t"+rcv2Real[m];
+						  	  dataSpur++;
+							 // System.out.println("Spuria\t"+rcv1Real[r]+"\t"+rcv2Real[m]);
+						  }
+						}
+					
 		
-		for ( int r = 0 ; r < y ; r++ )
-				for ( int m = 0 ; m < g ; m++ )
-					if ( Math.abs( rcv1[r] - rcv2[m] ) <= 5 )
-						dataOK++;
-			logger.info("TUPLE CORRETTE : {}", dataOK);
-			logger.info("TUPLE DI TROPPO : {}", receivedData - dataOK);
-			logger.info("PERCENTUALE TUPLE DI TROPPO: {}", ((receivedData - dataOK)/receivedData ));
-			
-		*/
+				}
+		if ( (dataReal+ dataSpur) != joinResult )
+			logger.info("#ERROR");
+		
 	}
 
 	private boolean validateMarkers() {
@@ -243,6 +266,25 @@ public class Client extends Observable {
 		logger.info("{} matched twins", receivedTwins - pendingTwins.size());
 		logger.info("{} missing twins: {}", pendingTwins.size(), pendingTwins);
 		return pendingTwins.isEmpty();
+	}
+	
+	private boolean validateResult() {
+		// prevent short-circuit evaluation
+		boolean valid = validateMarkers() & validateTwins();
+		
+		if (valid)
+			{ 	
+				logger.info("RESULT VALID!");
+				logger.info("N' TUPLE OF THE JOIN RESULT : {}", joinResult);
+				logger.info("N' TUPLE OF THE JOIN RESULT REAL : {}", dataReal);
+				logger.info("N' OF SPURIOUS TUPLE : {}", dataSpur);
+				logger.info("PERCENTUALE DI TUPLE SPURIE RISPETTO AL RISULTATO : {} %", ( float ) ( ( (float) dataSpur ) / (float) joinResult ) * 100 );
+			}
+		
+		else
+			logger.info("RESULT NOT VALID. #RECEIVED: {}", receivedData);
+		
+		return valid;
 	}
 	
 	private <T> void xorSet(Set<T> set, T elem) {
@@ -279,8 +321,8 @@ public class Client extends Observable {
 						break;
 					}	
     	
-				received1[y] = msg.toString();
-				System.out.println(" DATA SERVER 1\t "+	received1[y] );
+				received1[g] = msg.toString();
+				//System.out.println(" DATA SERVER 1\t "+	received1[g] );
 				g++;		
 	}}
 	
@@ -311,7 +353,7 @@ public class Client extends Observable {
 					}	
     	
 				received2[y] = msg.toString();
-				System.out.println(" DATA SERVER 2\t "+msg.toString());
+				//System.out.println(" DATA SERVER 2\t "+received2[y]);
 				y++;		
 	}}
 
