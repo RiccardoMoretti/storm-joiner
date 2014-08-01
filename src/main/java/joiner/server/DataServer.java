@@ -31,6 +31,9 @@ public class DataServer extends Thread {
 	private final boolean pipeline;
 	private int lastUsedPort;
 	private Socket helloSocket;
+	private float min;
+	private float max;
+	private float soglia;
 
 
 	private Cipher cipher;
@@ -41,11 +44,11 @@ public class DataServer extends Thread {
 	private ZContext context;
 	private int last = -1;
 	
-	public DataServer(int helloPort, String key, Set<String> markers, TwinFunction twin) throws Exception {
-		this(helloPort, key, markers, twin, true);
+	public DataServer(int helloPort, String key, Set<String> markers, TwinFunction twin, float min, float max, float soglia) throws Exception {
+		this(helloPort, key, markers, twin, true, min, max, soglia);
 	}
 	
-	public DataServer(int helloPort, String key, Set<String> markers, TwinFunction twin, boolean pipeline) throws Exception {
+	public DataServer(int helloPort, String key, Set<String> markers, TwinFunction twin, boolean pipeline, float min, float max, float soglia) throws Exception {
 		this.helloPort = helloPort;
 		this.lastUsedPort = helloPort;
 		this.markers = markers;
@@ -53,6 +56,9 @@ public class DataServer extends Thread {
 		this.cipher = createCipher(key);
 		this.workers = new HashMap<Integer, DataWorker>(); 
 		this.pipeline = pipeline;
+		this.min = min;
+		this.max=max;
+		this.soglia=soglia;
 	}
 	
 	public void last(int last) {
@@ -114,7 +120,7 @@ public class DataServer extends Thread {
 		logger.info("Received request: {}", request);
 		int port = ++lastUsedPort;
 		
-		DataWorker worker = new DataWorker(lastUsedPort, request, cipher, markers, twin, pipeline, 2*lastUsedPort);
+		DataWorker worker = new DataWorker(lastUsedPort, request, cipher, markers, twin, pipeline, 2*lastUsedPort, min, max, soglia);
 		helloSocket.send(port + " " + worker.getRecordsHint());
 		
 		worker.start();
@@ -130,7 +136,7 @@ public class DataServer extends Thread {
 		worker.done();
 	}
 	
-	public static void main(String[] args) {
+/*	public static void main(String[] args) {
 		// example: 3000 ThisIsASecretKey 10 0 1 2 3 4 5 6 7 8 9
 		
 		if (args.length < 3) {
@@ -158,5 +164,5 @@ public class DataServer extends Thread {
 			e.printStackTrace();
 		}
 	}
-
+*/
 }

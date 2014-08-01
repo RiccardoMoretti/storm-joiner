@@ -138,7 +138,7 @@ public class ComputationalServer extends Thread {
 		}
 	}
 
-	public static void main(String[] args) {
+/*	public static void main(String[] args) {
 		// example: 5555 2
 		
 		if (args.length != 3) {
@@ -153,6 +153,6 @@ public class ComputationalServer extends Thread {
 		
 		ComputationalServer cs = new ComputationalServer(incomingPort, joinerThreads, pipeline);
 		cs.start();
-	}
+	}*/
 
 }

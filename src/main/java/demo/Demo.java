@@ -28,25 +28,31 @@ public class Demo {
 		// create the twin function ( one every 10 )
 		TwinFunction twin = new HashTwinFunction(10);
 		
+		String[] statics = new String[100];
+		int st = 0;
+		
 		// create the data server
-		DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin);
-		// causes this thread ( ds ) to begin execution ( method run ) 
+		DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , 0, 100, 1);
 		ds.start();
 
 		// create the computational server 
 		ComputationalServer cs = new ComputationalServer(5555, 2);
-		// causes this thread ( cs ) to begin execution 
 		cs.start();
 
 		// create the client and execute the query
 		Client client = new Client("ThisIsASecretKey", markers, twin);
 		client.connect("tcp://127.0.0.1:5555");
 
-		DataServerConnector sc1 = new DataServerConnector("tcp://127.0.0.1:3000", "1", "10" );
-		DataServerConnector sc2 = new DataServerConnector("tcp://127.0.0.1:3000", "1", "5" );
+		DataServerConnector sc1 = new DataServerConnector("tcp://127.0.0.1:3000", "1", "50");
+		DataServerConnector sc2 = new DataServerConnector("tcp://127.0.0.1:3000", "1", "50");
 	
 		client.join( sc1, sc2 );
+		statics[st]=client.getStatics();
+		System.out.println("STATICS: \t"+statics[st]);
+		st++;
 		client.destroy();
+		
+	 
 	}
 	
 }

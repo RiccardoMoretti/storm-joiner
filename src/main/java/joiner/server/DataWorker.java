@@ -46,20 +46,22 @@ public class DataWorker extends Thread {
 	private int from, to;
 	private Domain D ;
 	private ZipfGenerator Z;
+	private float min;
+	private float max;
+	private float soglia;
 
 	
-	public DataWorker(int outputPort, DataServerRequest request, Cipher cipher, Set<String> markers, TwinFunction twin, int port) {
-		this(outputPort, request, cipher, markers, twin, true, port);
+	public DataWorker(int outputPort, DataServerRequest request, Cipher cipher, Set<String> markers, TwinFunction twin, int port, float min, float max, float soglia) {
+		this(outputPort, request, cipher, markers, twin, true, port, min, max , soglia);
 	}
 
-	public DataWorker(int outputPort, DataServerRequest request, Cipher cipher, Set<String> markers, TwinFunction twin, boolean pipeline, int port) {
+	public DataWorker(int outputPort, DataServerRequest request, Cipher cipher, Set<String> markers, TwinFunction twin, boolean pipeline, int port, float min, float max, float soglia) {
 		this.outputPort = outputPort;
 		this.cipher = cipher;
 		this.markers = markers;
 		this.twin = twin;
 		this.moreFlag = pipeline ? 0 : ZMQ.SNDMORE;
-		this.D = new Domain();
-		this.Z = new ZipfGenerator ((int) D.getDomainSize(), 0.5 );
+		
 		this.discretized = new float [Integer.parseInt(request.getColumn())*2];
 		this.random = new float [Integer.parseInt(request.getColumn())*2];
 		this.received = new String [1000000];
@@ -69,6 +71,13 @@ public class DataWorker extends Thread {
 		this.y= 0;
 		this.portClient = port;
 		this.tempDisc = new float[2];
+		this.min= min;
+		this.max=max;
+		this.soglia=soglia;
+		
+		this.D = new Domain(min,max,soglia);
+		this.Z = new ZipfGenerator ((int) D.getDomainSize(), 0.5 );
+		
 		
 		parseRequest(request);
 	}
@@ -111,7 +120,7 @@ if ( outputPort % 2 != 0)
 			for (int i = 0 ; i < to ; ++i)
 		
 			{	
-				rand = Z.nextInt();
+				rand = Z.nextInt()+D.getMin();
 				ok = false ;
 				//System.out.println("Rand\t\t " + rand );
 				
@@ -125,7 +134,7 @@ if ( outputPort % 2 != 0)
 					if ( cont == i )
 						ok = true;
 					else
-						rand = Z.nextInt() ;
+						rand = Z.nextInt()+D.getMin() ;
 				}
 				
 				random[i] = rand ;
@@ -260,19 +269,18 @@ if ( outputPort % 2 != 0)
 			float temp = D.getMax() ;
 			float disc[] = new float[D.getN()] ;
 			disc = D.getDisc();
-			int index = 0;
+			float index = 0;
 			
 			for ( int j = 0 ; j < D.getN() ; j++ )
 			{
-					if ( Math.abs( num - disc[j] ) < temp )
-						{	
-							temp = Math.abs( num - disc[j] );
-							index = j ;
-						}
+				if ( Math.abs ( num-disc[j]) < temp)
+				{ 	temp = Math.abs(num-disc[j]);
+					index = disc[j] ;
+				}
 			}				
 			
 			//System.out.println(" NUMERO "+num+"\t Intervallo "+disc[index]);
-			return disc[index];			
+			return index;			
 	}
 	
 	private float[] discretizedBis( float num )
@@ -287,13 +295,13 @@ if ( outputPort % 2 != 0)
 				
 			for ( int j = 0 ; j < D.getN() ; j++ )
 				{
-					if ( Math.abs( ( num - D.getSoglia() ) - disc[j] ) < tempdown )
+					if ( Math.abs( ( num - D.getSoglia() ) - disc[j] ) <= tempdown )
 					{
 						tempdown = Math.abs( ( num - D.getSoglia() ) - disc[j] ) ;
 						indexdown = j ;
 					}
 			
-					if ( Math.abs( ( num + D.getSoglia() ) - disc[j] ) < tempup )
+					if ( Math.abs( ( num + D.getSoglia() ) - disc[j] ) <= tempup )
 					{
 						tempup = Math.abs( ( num + D.getSoglia() ) - disc[j] ) ;
 						indexup = j ;

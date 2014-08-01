@@ -356,5 +356,12 @@ public class Client extends Observable {
 				//System.out.println(" DATA SERVER 2\t "+received2[y]);
 				y++;		
 	}}
+	
+	public String getStatics()
+	{
+		return  joinResult +"\t"+dataReal+"\t"+ dataSpur + "\t" +( float ) ( ( (float) dataSpur ) / (float) joinResult ) * 100 ;
+	}
+		
+	}
 
-}
+

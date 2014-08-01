@@ -20,6 +20,7 @@ public class Domain {
 			CreateRange();
 		}
 		
+		
 		public Domain(float min, float max, float soglia)
 		{
 			this.min = min;
