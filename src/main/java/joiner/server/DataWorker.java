@@ -21,7 +21,7 @@ import joiner.computational.*;
 public class DataWorker extends Thread {
 
 	private final Logger logger = LoggerFactory.getLogger(DataWorker.class);
-
+	
 	private int portClient;
 	private final int outputPort;
 	private final Cipher cipher;
@@ -155,9 +155,9 @@ if ( outputPort % 2 != 0)
 			while(!done)
 				Thread.sleep(100);
 			
-			System.out.println( "\t\tRELAZIONE");
+			System.out.println( "\t\tTABLE");
 			for ( int u = 0 ; u < to ; u++ )
-				System.out.println( "DISCRETIZZATO\t"+discretized[u]+"\tORIGINALE\t"+random[u]);
+				System.out.println( "Discretied:\t"+discretized[u]+"\tOriginal:\t"+random[u]);
 
 		} catch ( Exception e ) {
 
@@ -230,9 +230,9 @@ if ( outputPort % 2 != 0)
 			while(!done)
 				Thread.sleep(100);
 			
-			System.out.println( "\t\tRELAZIONE");
+			System.out.println( "\t\tTABLE");
 			for ( int u = 0 ; u < 2*to ; u++ )
-			System.out.println( "DISCRETIZZATO\t"+discretized[u]+"\tORIGINALE\t"+random[u]);
+			System.out.println( "Discretized:\t"+discretized[u]+"\tOriginal:\t"+random[u]);
 
 		} catch ( Exception e ) {
 
@@ -248,6 +248,7 @@ if ( outputPort % 2 != 0)
 		initClientDataServer();
 		receiveRequest();	
 		respondeRequest();
+		destroyClientDataServer();
 	}
 
 
@@ -295,15 +296,15 @@ if ( outputPort % 2 != 0)
 				
 			for ( int j = 0 ; j < D.getN() ; j++ )
 				{
-					if ( Math.abs( ( num - D.getSoglia() ) - disc[j] ) <= tempdown )
+					if ( Math.abs( ( num - D.getThreshold() ) - disc[j] ) <= tempdown )
 					{
-						tempdown = Math.abs( ( num - D.getSoglia() ) - disc[j] ) ;
+						tempdown = Math.abs( ( num - D.getThreshold() ) - disc[j] ) ;
 						indexdown = j ;
 					}
 			
-					if ( Math.abs( ( num + D.getSoglia() ) - disc[j] ) <= tempup )
+					if ( Math.abs( ( num + D.getThreshold() ) - disc[j] ) <= tempup )
 					{
-						tempup = Math.abs( ( num + D.getSoglia() ) - disc[j] ) ;
+						tempup = Math.abs( ( num + D.getThreshold() ) - disc[j] ) ;
 						indexup = j ;
 					}
 				}
@@ -328,6 +329,11 @@ if ( outputPort % 2 != 0)
 		socketClient.connect("tcp://localhost:" + portClient );
 	}
 
+	private void destroyClientDataServer()
+	{
+		contextClient.destroy();
+	}
+	
 	private void receiveRequest()
 	{		
 			while ( true )

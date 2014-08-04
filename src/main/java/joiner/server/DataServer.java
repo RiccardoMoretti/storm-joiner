@@ -2,7 +2,6 @@ package joiner.server;
 
 import java.util.HashMap;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,7 +10,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import joiner.commons.DataServerRequest;
-import joiner.commons.twins.HashTwinFunction;
 import joiner.commons.twins.TwinFunction;
 
 import org.slf4j.Logger;
@@ -35,9 +33,7 @@ public class DataServer extends Thread {
 	private float max;
 	private float soglia;
 
-
 	private Cipher cipher;
-
 
 	private Map<Integer, DataWorker> workers;
 
@@ -136,33 +132,4 @@ public class DataServer extends Thread {
 		worker.done();
 	}
 	
-/*	public static void main(String[] args) {
-		// example: 3000 ThisIsASecretKey 10 0 1 2 3 4 5 6 7 8 9
-		
-		if (args.length < 3) {
-			logger.error("args: pipeline helloPort cipherKey oneTwinEvery markers...");
-			System.exit(1);
-		}
-		
-		int index = 0;
-		boolean pipeline = Boolean.parseBoolean(args[index++]);
-		int helloPort = Integer.parseInt(args[index++]);
-		String cipherKey = args[index++];
-		
-		int oneTwinEvery = Integer.parseInt(args[index++]);
-		TwinFunction twin = new HashTwinFunction(oneTwinEvery);
-		
-		Set<String> markers = new HashSet<String>();
-		for (int i = index; i < args.length; ++i)
-			markers.add(args[i]);
-		
-		try {
-			DataServer ds = new DataServer(helloPort, cipherKey, markers, twin, pipeline);
-			ds.start();
-		} catch (Exception e) {
-			logger.error("Server error");
-			e.printStackTrace();
-		}
-	}
-*/
 }

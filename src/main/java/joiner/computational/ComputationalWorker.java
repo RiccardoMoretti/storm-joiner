@@ -23,6 +23,7 @@ public class ComputationalWorker extends Thread {
 	private boolean done;
 	
 	public ComputationalWorker(String inputString, String outputString, int entriesHint) {
+		
 		this.inputString = inputString;
 		this.entriesHint = entriesHint;
 		
@@ -35,6 +36,7 @@ public class ComputationalWorker extends Thread {
 		output.connect(outputString);
 		
 		done = false;
+	
 	}
 	
 	@Override
@@ -72,13 +74,15 @@ public class ComputationalWorker extends Thread {
 
 		} catch (Exception e) {
 			e.printStackTrace();
+	
 		} finally {
-			context.destroy();
+			context.destroy();		
+		
 		}
 		
 	}
 	
-	public void done() {
+	public void done() {		
 		done = true;
 	}
 

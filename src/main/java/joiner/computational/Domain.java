@@ -6,49 +6,36 @@ public class Domain {
 		private float min ;
 		private float max ;
 		private float domainSize ;
-		private float soglia ;
+		private float threshold ;
+		
 		private float disc[] ;
 		private int n;
-
-		public Domain()
-		{
-			this.min = 0;
-			this.max = 20;
-			this.domainSize = max - min ;
-			soglia = 1 ;
-			
-			CreateRange();
-		}
+	
 		
-		
-		public Domain(float min, float max, float soglia)
+		public Domain(float min, float max, float threshold)
 		{
 			this.min = min;
 			this.max = max;
 			this.domainSize = max - min ;
-			this.soglia = soglia ;
+			this.threshold = threshold ;
 			
 			CreateRange();
 		}
 		
-/*	Permette di suddividere il dominio in intervalli grandi " 2 * soglia ", 
- * 		ogni etichetta dell'intervallo 	sarà il valore discreto 
- * 		che verrà associato successivamente ad ogni istanza.
-*/
-			
-			public void CreateRange( )
+		
+		//Split the domain in range with size = 2*threshold.
+		public void CreateRange( )
 			{	
-				float inc = 2 * soglia ;
+				float inc = 2 * threshold;
 				int j = 0 ;
 				
-				// Inizializzazione numero totale degli intervalli, che corrisponde al numero degli elementi discreti
-				// a cui andrò poi ad associare ogni istanza
 				if ( (( max - min ) % inc ) == 0 )
 					n = ( int ) (( max - min ) / inc ) + 1 ;
 				else
 					n = ( int ) (( max - min ) / inc ) + 2 ;
 				
-				disc = new float [ n ] ;						// Creo array numero discreti
+				//array of range's label
+				disc = new float [ n ] ;						
 				
 				for ( float i = min ; i < max ; i = i + inc )
 				{
@@ -59,29 +46,27 @@ public class Domain {
 				if ( ( disc[n-1] ) == 0 )
 					disc [ j ] = max ;
 		
-		/*
-				System.out.println ( " INTERVALLI / NUMERI DISCRETI " ) ;
-				System.out.println ( " Numero totale : " + n ) ;
-				for ( int q = 0 ; q < n ; q ++ )
-					System.out.println ( " ETICHETTA " + disc[q] ) ;	*/
+				//System.out.println ( " NUMBERS OF RANGE : " + n ) ;	 																					
 			
 			}
 			
+			
 		public float[] getDisc()
-		{ 	return this.disc; 		}
+		{ 	return this.disc; 			}
 		
 		public int getN()
-		{	return this.n ;	}
+		{	return this.n ;				}
 		
-		public float getSoglia()
-		{	return this.soglia ;	}
+		public float getThreshold()
+		{	return this.threshold ;		}
 		
 		public float getMin()
-		{	return this.min ;	}
+		{	return this.min ;			}
 		
 		public float getMax()
-		{	return this.max ; 	}
+		{	return this.max ; 			}
 		
 		public float getDomainSize()
 		{	return	this.domainSize ;	}
+
 }

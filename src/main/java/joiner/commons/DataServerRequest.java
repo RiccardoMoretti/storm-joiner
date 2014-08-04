@@ -1,6 +1,7 @@
 package joiner.commons;
 
 public class DataServerRequest {
+	
 	public final String table;
 	public final String column;
 	

@@ -1,6 +1,5 @@
 package joiner.commons;
 
-
 public enum Prefix {
 
 	DATA('0'),

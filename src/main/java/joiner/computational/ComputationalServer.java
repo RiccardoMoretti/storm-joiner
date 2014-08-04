@@ -136,23 +136,7 @@ public class ComputationalServer extends Thread {
 			e.printStackTrace();
 			clientSocket.send("ERROR: " + e.getMessage());
 		}
+		
 	}
-
-/*	public static void main(String[] args) {
-		// example: 5555 2
-		
-		if (args.length != 3) {
-			logger.error("args: pipeline incomingPort joinerThreads");
-			System.exit(1);
-		}
-		
-		int index = 0;
-		boolean pipeline = Boolean.parseBoolean(args[index++]);
-		int incomingPort = Integer.parseInt(args[index++]);
-		int joinerThreads = Integer.parseInt(args[index++]);
-		
-		ComputationalServer cs = new ComputationalServer(incomingPort, joinerThreads, pipeline);
-		cs.start();
-	}*/
 
 }

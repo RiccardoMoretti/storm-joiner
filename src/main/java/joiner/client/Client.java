@@ -23,11 +23,14 @@ public class Client extends Observable {
 	
 	private final static Logger logger = LoggerFactory.getLogger(Client.class);
 	
+	private final static int THOUSAND = 1000;
+	private final static int MILLION  = THOUSAND * THOUSAND;
+	private final static int BILLION  = THOUSAND * MILLION;
+	
 	private final ZContext context;
 	private ZContext contextDataServer1;
 	private ZContext contextDataServer2;
 	
-
 	private final Socket socket;
 	private Socket  socketDataServer1;
 	private Socket  socketDataServer2;
@@ -134,17 +137,36 @@ public class Client extends Observable {
 			  requestData2(request[u]);			  
 			}
 		
+		long initial = System.nanoTime();		
+		
 		requestData1("");
 		requestData2("");
+		
+		float elapsed = (System.nanoTime() - initial) / ((float) BILLION);
+		//logger.info("Time for request data : {} s", elapsed);
+		
+		
+		initial = System.nanoTime();
 		
 		receiveRequestData1();	
 		receiveRequestData2();
 		
-		socketDataServer1.close();
-		socketDataServer2.close();
+		elapsed = (System.nanoTime() - initial) / ((float) BILLION);
+		//logger.info("Time for received data : {} s", elapsed);
+		
+		contextDataServer1.destroy();
+		contextDataServer2.destroy();
+		
+		initial = System.nanoTime();
 		
 		checkSpuriosTuple();
 		validateResult();
+		
+		elapsed = (System.nanoTime() - initial) / ((float) BILLION);
+		logger.info("Time for check/validate data : {} s", elapsed);
+		
+		
+		
 	}
 	
 	private void sendDataConnectors(DataServerConnector[] connectors) {
