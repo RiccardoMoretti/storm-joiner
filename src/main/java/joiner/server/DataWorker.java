@@ -17,40 +17,43 @@ import org.zeromq.ZMQ.Socket;
 
 import joiner.computational.*;
 
-
 public class DataWorker extends Thread {
 
 	private final Logger logger = LoggerFactory.getLogger(DataWorker.class);
 	
+	private final static int MAXDATA  = 1000000;
+	
+	private ZContext context;
+	private ZContext contextClient;
+	
+	private Socket socket;
+	private Socket socketClient;
+	
 	private int portClient;
 	private final int outputPort;
-	private final Cipher cipher;
-	private float[] tempDisc;
+		
+	private final Cipher cipher;	
 	private final Set<String> markers;
 	private final TwinFunction twin;
 	private final int moreFlag;
-	private Socket socket;
-	private Socket socketClient;
+	
 	private String received[];
 
 	private float[] discretized ;
 	private float[] random;
+	private float[] tempDisc;
 	private float rand;
+	
+	private int from, to;
 	private int cont;
 	private int y;
-	private boolean ok;
-
-	private ZContext context;
-	private ZContext contextClient;
-	private boolean done = false;
-	private int from, to;
-	private Domain D ;
-	private ZipfGenerator Z;
-	private float min;
-	private float max;
-	private float soglia;
-
 	
+	private boolean ok;
+	private boolean done = false;
+	
+	private ZipfGenerator Z;
+	private Domain D ;
+
 	public DataWorker(int outputPort, DataServerRequest request, Cipher cipher, Set<String> markers, TwinFunction twin, int port, float min, float max, float soglia) {
 		this(outputPort, request, cipher, markers, twin, true, port, min, max , soglia);
 	}
@@ -60,25 +63,19 @@ public class DataWorker extends Thread {
 		this.cipher = cipher;
 		this.markers = markers;
 		this.twin = twin;
-		this.moreFlag = pipeline ? 0 : ZMQ.SNDMORE;
-		
+		this.moreFlag = pipeline ? 0 : ZMQ.SNDMORE;		
 		this.discretized = new float [Integer.parseInt(request.getColumn())*2];
 		this.random = new float [Integer.parseInt(request.getColumn())*2];
-		this.received = new String [1000000];
+		this.received = new String [MAXDATA];
 		this.rand = 0 ;
 		this.cont = 0 ;	
 		this.ok = false ;
 		this.y= 0;
 		this.portClient = port;
-		this.tempDisc = new float[2];
-		this.min= min;
-		this.max=max;
-		this.soglia=soglia;
-		
+		this.tempDisc = new float[2];	
 		this.D = new Domain(min,max,soglia);
 		this.Z = new ZipfGenerator ((int) D.getDomainSize(), 0.5 );
-		
-		
+				
 		parseRequest(request);
 	}
 
@@ -88,7 +85,7 @@ public class DataWorker extends Thread {
 		to = Integer.parseInt(request.getColumn());
 	}
 	
-	//return total number of tuples ( marker + twin + real )
+	// return total number of tuples ( markerS + twinS + real )
 	public int getRecordsHint() {
 		return (int) (markers.size() + (to - from + 1) * (1 + twin.getPercent()));
 	}
@@ -98,31 +95,30 @@ public class DataWorker extends Thread {
 
 		context = new ZContext();
 		socket = context.createSocket(ZMQ.PUSH);
-if ( outputPort % 2 != 0)
-	{					
-		try {
 
-			// Open the output socket
-			socket.bind("tcp://*:" + outputPort);
-			logger.info("Start pushing data to port {}", outputPort);
+		// the behavior for the two data server is different, we have to distinguish them
+		
+		// first data server
+		if ( outputPort % 2 != 0)
+		{					
+			try {
+
+				// Open the output socket
+				socket.bind("tcp://*:" + outputPort);
+				logger.info("Start pushing data to port {}", outputPort);
 			
-			// Send all the markers (without their twins) [TODO shuffle them with the data]
-			for (String marker: markers)
-			{	encryptAndSend(marker, Prefix.MARKER, false); 
-				//System.out.println("Marker \t" + marker );	
-			}
-	
-			//l'attributo di join deve essere univoco ( chiave ), 
-			// controllo che il genereatore li generi tutti diversi
+				// Send all the markers (without their twins) [TODO shuffle them with the data]
+				for (String marker: markers)
+					encryptAndSend(marker, Prefix.MARKER, false); 	
 		
 			// Send the data (with the twins)
 			
-			for (int i = 0 ; i < to ; ++i)
-		
-			{	
-				rand = Z.nextInt()+D.getMin();
-				ok = false ;
-				//System.out.println("Rand\t\t " + rand );
+			// the join attribute must be unique
+			// check that the generator will create all different
+				for (int i = 0 ; i < to ; ++i)	
+				{	
+					rand = Z.nextInt()+D.getMin();
+					ok = false ;
 				
 				while ( !ok )
 				{	 cont = 0;
@@ -135,64 +131,58 @@ if ( outputPort % 2 != 0)
 						ok = true;
 					else
 						rand = Z.nextInt()+D.getMin() ;
+					}
+				
+					random[i] = rand ;
+					discretized[i] = this.discretized(random[i]);	
+
 				}
-				
-				random[i] = rand ;
-				discretized[i] = this.discretized(random[i]);	
-
-			}
-	
 			
-			for (int i = 0 ; i < to ; ++i)
-			{	//System.out.println("DISCRETIZZATO :\t"+discretized[i]);
-				encryptAndSend( Float.toString(discretized[i]), Prefix.DATA, true);
-			}
+				for (int i = 0 ; i < to ; ++i)
+					encryptAndSend( Float.toString(discretized[i]), Prefix.DATA, true);
+						
+				// 	Signal the end of the connection
+				socket.send("");
+				logger.info("All data pushed to port {}", outputPort);
+
+				while(!done)
+					Thread.sleep(100);
 			
-			// Signal the end of the connection
-			socket.send("");
-			logger.info("All data pushed to port {}", outputPort);
+				System.out.println( "\t\tTABLE L");
+				for ( int u = 0 ; u < to ; u++ )
+					System.out.println( "Original:\t"+random[u]+"\tDiscretized:\t"+discretized[u]);
 
-			while(!done)
-				Thread.sleep(100);
-			
-			System.out.println( "\t\tTABLE");
-			for ( int u = 0 ; u < to ; u++ )
-				System.out.println( "Discretied:\t"+discretized[u]+"\tOriginal:\t"+random[u]);
+			} catch ( Exception e ) {
 
-		} catch ( Exception e ) {
+				logger.error(e.getMessage());
+				socket.send("SERVER ERROR: " + e.getMessage());
 
-			logger.error(e.getMessage());
-			socket.send("SERVER ERROR: " + e.getMessage());
-
-		} finally {
+			} finally {
 						context.destroy();	
-					}	
-		
+					  }	
+			// second data server		
 	}else
+		{
 		
-	{
-		
-		try {
+			try {
 
-			// Open the output socket
-			socket.bind("tcp://*:" + outputPort);
-			logger.info("Start pushing data to port {}", outputPort);
+				// Open the output socket
+				socket.bind("tcp://*:" + outputPort);
+				logger.info("Start pushing data to port {}", outputPort);
 			
-			// Send all the markers (without their twins) [TODO shuffle them with the data]
-			for (String marker: markers)
-			{	encryptAndSend(marker, Prefix.MARKER, false); 
-				//System.out.println("Marker \t" + marker );	
-			}
+				// Send all the markers (without their twins) [TODO shuffle them with the data]
+				for (String marker: markers)
+					encryptAndSend(marker, Prefix.MARKER, false); 
+			
 	
 		
-			// Send the data (with the twins)		
+				// Send the data (with the twins)		
 			
-			for (int i = 0 ; i < 2*to ; i = i + 2 )
+				for (int i = 0 ; i < 2*to ; i = i + 2 )
 		
-			{	rand = Z.nextInt()+D.getMin();
-				ok = false ;
-				//System.out.println("Rand\t\t " + rand );
-				
+				{	rand = Z.nextInt()+D.getMin();
+					ok = false ;
+								
 				while ( !ok )
 				{	 cont = 0;
 		
@@ -205,24 +195,18 @@ if ( outputPort % 2 != 0)
 					else
 						rand = Z.nextInt()+D.getMin() ;
 				}
-				
-				
+							
 				random[i] = rand ;
 				random[i+1] = rand ;
 				tempDisc = this.discretizedBis(random[i]);				
 				discretized[i] = tempDisc[0];
 				discretized[i+1] = tempDisc[1];
-		
-				//System.out.println("Original\t " + random[i]+"\tDiscretized\t" + discretized[i] );
-				//System.out.println("Original\t " + random[i+1]+"\tDiscretized\t" + discretized[i+1] );
-			
 			}
 	
 			
 			for (int i = 0 ; i < 2*to ; ++i)
-			{	//System.out.println("DISCRETIZZATO :\t"+discretized[i]);
 				encryptAndSend( Float.toString(discretized[i]), Prefix.DATA, true);
-			}
+			
 			// Signal the end of the connection
 			socket.send("");
 			logger.info("All data pushed to port {}", outputPort);
@@ -230,28 +214,32 @@ if ( outputPort % 2 != 0)
 			while(!done)
 				Thread.sleep(100);
 			
-			System.out.println( "\t\tTABLE");
+			System.out.println( "\t\tTABLE R");
 			for ( int u = 0 ; u < 2*to ; u++ )
-			System.out.println( "Discretized:\t"+discretized[u]+"\tOriginal:\t"+random[u]);
+				System.out.println( "Original:\t"+random[u]+"\tDiscretized:\t"+discretized[u]);
 
 		} catch ( Exception e ) {
 
 			logger.error(e.getMessage());
 			socket.send("SERVER ERROR: " + e.getMessage());
 
-		} finally {
-						context.destroy();	
-					}	
-		
+		} finally { 
+					context.destroy();	
+				  }			
 	}
 		
+		// open the socket for directly communicate with the client
 		initClientDataServer();
+		
+		//receive the request from the client
 		receiveRequest();	
+		
+		// responde at the client request
 		respondeRequest();
+		
+		// close the socket with the client
 		destroyClientDataServer();
 	}
-
-
 
 	private void encryptAndSend(String data, Prefix prefix, boolean addTwin) throws Exception {
 		
@@ -265,6 +253,7 @@ if ( outputPort % 2 != 0)
 		}
 	}
 
+	//Each tuple $t$ in \tab1\ is then associated with the discrete value $v$ nearest to $t$[\Jatt] 
 	private float discretized ( float num )
 	{
 			float temp = D.getMax() ;
@@ -280,10 +269,11 @@ if ( outputPort % 2 != 0)
 				}
 			}				
 			
-			//System.out.println(" NUMERO "+num+"\t Intervallo "+disc[index]);
 			return index;			
 	}
 	
+	// Each tuple $t$ in \rtab\ is instead associated with two discrete values $v_1$ and $v_2$,
+	//	 which are the discrete values nearest to $t$[\Jatt]$-${\em range} and $t$[\Jatt]$+${\em range} 
 	private float[] discretizedBis( float num )
 	{
 		float tempup = D.getMax();
@@ -311,11 +301,8 @@ if ( outputPort % 2 != 0)
 			
 			forReturn[0]= disc[indexdown] ;		
 			forReturn[1]= disc[indexup] ;
-			//System.out.println("NUMBER\t "+num+"\t"+disc[indexdown]+ "\t"+disc[indexup]);
-			
-		
-		return forReturn;
-	
+					
+		return forReturn;	
 	}
 	
 	public void done() {
@@ -345,12 +332,12 @@ if ( outputPort % 2 != 0)
 						
 						received[y] = msg.toString();
 						y++;
-						//System.out.println(" RICHIESTO\t "+msg.toString());  
 					}
 	}
 
 	private void respondeRequest()
-	{	  
+	{	
+		// distinguish the two different data server
 		if ( outputPort % 2 != 0)
 		{
 			for ( int k = 0 ; k < y ; k++ )

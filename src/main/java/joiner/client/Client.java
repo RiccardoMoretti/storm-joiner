@@ -26,6 +26,7 @@ public class Client extends Observable {
 	private final static int THOUSAND = 1000;
 	private final static int MILLION  = THOUSAND * THOUSAND;
 	private final static int BILLION  = THOUSAND * MILLION;
+	private final static int MAXDATA  = 1000000 ;
 	
 	private final ZContext context;
 	private ZContext contextDataServer1;
@@ -34,34 +35,40 @@ public class Client extends Observable {
 	private final Socket socket;
 	private Socket  socketDataServer1;
 	private Socket  socketDataServer2;
-	private final Cipher cipher;
 	
+	private final Cipher cipher;
 	private final Set<String> markers;
 	private final TwinFunction twin;
-	private String received1[] ;
-	private String received2[] ;
+	
+	private String request[];
+	private String received1[];
+	private String received2[];
 	private String joinOK[];
 	private String joinSpurious[];
-	private int y ;
-	private int g ;
+	
+	private int cont1;
+	private int cont2;	
+	private int cont3;
+			
+	private int joinResult;
 	private int dataSpur;
-	private int joinResult ;
 	private int dataReal;
+	
 	private float rcv1Real[];
 	private float rcv2Real[];
 	private float rcv1Disc[];
 	private float rcv2Disc[];
+	
 	private boolean eq;
 	
 	private Set<String> pendingTwins;
 	private Set<String> pendingMarkers;
 	private int receivedData;
 	private int receivedTwins;
+	
 	private int outputPort1;
 	private int outputPort2;
-	private String request[];
-	private int i;
-	
+		
 	public Client(String key, Set<String> markers, TwinFunction twin) throws Exception {
 		this.cipher = createCipher(key);
 		this.markers = markers;
@@ -70,20 +77,20 @@ public class Client extends Observable {
 		this.socket = context.createSocket(ZMQ.PAIR);
 		this.socket.setHWM(100000000);
 		this.socket.setLinger(-1);
-		this.i = 0 ;
-		this.request = new String[1000000];
-		this.received1 = new String[1000000];
-		this.received2 = new String[1000000];
-		this.rcv1Real = new float[1000000];
-		this.rcv2Real = new float[1000000];
-		this.rcv1Disc = new float[1000000];
-		this.rcv2Disc = new float[1000000];
-		this.y = 0 ;
-		this.g = 0 ;
+		this.cont3 = 0 ;
+		this.request = new String[MAXDATA];
+		this.received1 = new String[MAXDATA];
+		this.received2 = new String[MAXDATA];
+		this.rcv1Real = new float[MAXDATA];
+		this.rcv2Real = new float[MAXDATA];
+		this.rcv1Disc = new float[MAXDATA];
+		this.rcv2Disc = new float[MAXDATA];
+		this.cont1 = 0 ;
+		this.cont2 = 0 ;
 		this.joinResult = 0;
 		this.dataReal = 0 ;
-		this.joinOK = new String[1000000] ;
-		this.joinSpurious = new String [ 1000000 ];
+		this.joinOK = new String[MAXDATA] ;
+		this.joinSpurious = new String[MAXDATA];
 		this.dataSpur = 0 ;
 		this.eq = false;
 
@@ -126,13 +133,14 @@ public class Client extends Observable {
 		}
 		
 		socket.send("ACK");	
-						
+		
+		// open the socket for request/receive data directly from data server 
 		initClientDataServer1();
 		initClientDataServer2();
 		
-		
-		for ( int u = 0 ; u < i ; u++ )
-			{ //System.out.println( "\tDA RICHIEDERE\t"+request[u]); 
+		// request the data at every data server
+		for ( int u = 0 ; u < cont3 ; u++ )
+			{  
 			  requestData1(request[u]);
 			  requestData2(request[u]);			  
 			}
@@ -148,24 +156,25 @@ public class Client extends Observable {
 		
 		initial = System.nanoTime();
 		
+		// receive the request data from the data server
 		receiveRequestData1();	
 		receiveRequestData2();
 		
 		elapsed = (System.nanoTime() - initial) / ((float) BILLION);
 		//logger.info("Time for received data : {} s", elapsed);
 		
+		// end the two connection with the data server
 		contextDataServer1.destroy();
 		contextDataServer2.destroy();
 		
 		initial = System.nanoTime();
 		
-		checkSpuriosTuple();
+		// check if there are spurious tuples and validate the result received
+		checkSpuriousTuple();
 		validateResult();
 		
 		elapsed = (System.nanoTime() - initial) / ((float) BILLION);
 		logger.info("Time for check/validate data : {} s", elapsed);
-		
-		
 		
 	}
 	
@@ -183,6 +192,7 @@ public class Client extends Observable {
 		// split the message in its prefix and its payload
 		Prefix prefix = Prefix.of(message.charAt(0));
 		String payload = message.substring(1);
+
 		// process the prefix and the payload
 		process(prefix, payload);
 	}
@@ -194,21 +204,20 @@ public class Client extends Observable {
 			logger.debug("match: {}", payload);
 			++receivedData;
 			eq = false;
-			//System.out.println(" PREFIX : "+prefix+"\tPAYLOAD : "+payload);
 			if ( receivedData == 1 )
 			{
-				request[i]= payload;
-				i++;
+				request[cont3]= payload;
+				cont3++;
 			}
 			else 
 			{
-				for ( int r = 0 ; r < i ; r++ )
+				for ( int r = 0 ; r < cont3 ; r++ )
 					if ( payload.equals(request[r]))
 						eq= true;
 				if ( !eq )
 				{
-					request[i]= payload;
-					i++;
+					request[cont3]= payload;
+					cont3++;
 				}	
 			}
 			
@@ -236,43 +245,37 @@ public class Client extends Observable {
 	}
 	
 	
-	private void checkSpuriosTuple() {
+	private void checkSpuriousTuple() {
 					
-		for ( int r = 0 ; r < g ; r++ )
+		for ( int r = 0 ; r < cont2 ; r++ )
 			{ 
 				rcv1Real[r] = Float.valueOf( received1[r].split("\t")[0]);
 				rcv1Disc[r] = Float.valueOf( received1[r].split("\t")[1]);
-				//System.out.println("\tREALE :"+rcv1Real[r]+"\tDISC :"+rcv1Disc[r]);
 			}
 			
-		System.out.println("\t");
-		for ( int m = 0 ; m < y ; m++ )			
+		for ( int m = 0 ; m < cont1 ; m++ )			
 			{ 
 				rcv2Real[m] = Float.valueOf(received2[m].split("\t")[0]);
 				rcv2Disc[m] = Float.valueOf(received2[m].split("\t")[1]);
-				//System.out.println("\tREALE :"+rcv2Real[m]+"\tDISC :"+rcv2Disc[m]);
 			}
 		
-		for ( int r = 0 ; r < g ; r++ )
-			for ( int m = 0 ; m < y ; m++ )
+		for ( int r = 0 ; r < cont2 ; r++ )
+			for ( int m = 0 ; m < cont1 ; m++ )
 				{ 
 					if ( rcv1Disc[r] == rcv2Disc[m] )
 						{ 
 						  joinResult++;
 						  if ( Math.abs(rcv1Real[r] -rcv2Real[m]) <= 1)
-							{ //System.out.println("Reale\t"+rcv1Real[r]+"\t"+rcv2Real[m]);
-							  joinOK[dataReal] = rcv1Real[r]+"\t"+rcv2Real[m];
+							{ joinOK[dataReal] = rcv1Real[r]+"\t"+rcv2Real[m];
 							  dataReal++;
 							}
 						  else
-						  {	  joinSpurious[dataSpur] = rcv1Real[r]+"\t"+rcv2Real[m];
+						   {  joinSpurious[dataSpur] = rcv1Real[r]+"\t"+rcv2Real[m];
 						  	  dataSpur++;
-							 // System.out.println("Spuria\t"+rcv1Real[r]+"\t"+rcv2Real[m]);
-						  }
+						   }
 						}
-					
-		
 				}
+		
 		if ( (dataReal+ dataSpur) != joinResult )
 			logger.info("#ERROR");
 		
@@ -318,17 +321,15 @@ public class Client extends Observable {
 	
 	
 	private void initClientDataServer1()
-	{
-		outputPort1 = 6002 ;
+	{	outputPort1 = 6002 ;
 		contextDataServer1 = new ZContext();
 		socketDataServer1 = contextDataServer1.createSocket(ZMQ.PAIR);
-		socketDataServer1.bind("tcp://*:" + outputPort1);
-		
+		socketDataServer1.bind("tcp://*:" + outputPort1);		
 	}
 	
 	private void requestData1(String payload)
 	{							
-				    socketDataServer1.send(payload);
+	    socketDataServer1.send(payload);
 	}
 	
 	private void receiveRequestData1()
@@ -339,27 +340,23 @@ public class Client extends Observable {
 				Bytes msg = new Bytes ( socketDataServer1.recv() );
 		
 				if (msg.isEmpty())
-					{
-						break;
-					}	
+						break;	
     	
-				received1[g] = msg.toString();
-				//System.out.println(" DATA SERVER 1\t "+	received1[g] );
-				g++;		
-	}}
+				received1[cont2] = msg.toString();
+				cont2++;		
+			}
+	}
 	
 	private void initClientDataServer2()
-	{
-		outputPort2 = 6004 ;
+	{	outputPort2 = 6004 ;
 		contextDataServer2 = new ZContext();
 		socketDataServer2 = contextDataServer2.createSocket(ZMQ.PAIR);
-		socketDataServer2.bind("tcp://*:" + outputPort2);
-		
+		socketDataServer2.bind("tcp://*:" + outputPort2);		
 	}
 	
 	private void requestData2(String payload)
 	{							
-				    socketDataServer2.send(payload);
+		socketDataServer2.send(payload);
 	}
 	
 	private void receiveRequestData2()
@@ -370,20 +367,18 @@ public class Client extends Observable {
 				Bytes msg = new Bytes ( socketDataServer2.recv() );
 		
 				if (msg.isEmpty())
-					{
 						break;
-					}	
     	
-				received2[y] = msg.toString();
-				//System.out.println(" DATA SERVER 2\t "+received2[y]);
-				y++;		
-	}}
+				received2[cont1] = msg.toString();
+				cont1++;		
+			}
+	}
 	
 	public String getStatics()
 	{
 		return  joinResult +"\t"+dataReal+"\t"+ dataSpur + "\t" +( float ) ( ( (float) dataSpur ) / (float) joinResult ) * 100 ;
 	}
 		
-	}
+}
 
 
