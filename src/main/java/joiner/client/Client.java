@@ -376,7 +376,7 @@ public class Client extends Observable {
 	
 	public String getStatics()
 	{
-		return  joinResult +"\t"+dataReal+"\t"+ dataSpur + "\t" +( float ) ( ( (float) dataSpur ) / (float) joinResult ) * 100 ;
+		return  dataReal+"\t"+ dataSpur + "\t" +( float ) ( ( (float) dataSpur ) / (float) joinResult ) * 100 ;
 	}
 		
 }

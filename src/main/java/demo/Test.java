@@ -35,6 +35,8 @@ public class Test {
 	private final static int NUMTESTCASE  = 5;
 
 	public static void main(String[] args) throws Exception {
+		
+		String[] statics = new String[NUMTESTCASE];
 
 		// create the markers
 		Set<String> markers = new HashSet<String>();
@@ -69,8 +71,21 @@ public class Test {
 			float elapsed = (System.nanoTime() - initial) / ((float) BILLION);
 			logger.info("Elapsed time: {} s", elapsed);
 
+			statics[i]=client.getStatics()+"\t"+elapsed+"\t"+i;
 			client.destroy();
 
 		}
+		
+		System.out.println("");
+		logger.info("Domain from {} to {} ", DOMAINSTARTSAT, DOMAINENDSAT);
+		logger.info("Number of tulpes L: {} ", TUPLETABLEL);
+		logger.info("Number of tulpes L: {} ", TUPLETABLEL);
+		logger.info("Number of tuples R: {} ", TUPLETABLER);
+		logger.info("DataReal\tDataSpurious\tErrPercent\tElapsedTime\tTreshold");
+		
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
+			logger.info("\t{}", statics[i]);
+		
+		
 	}
 }
