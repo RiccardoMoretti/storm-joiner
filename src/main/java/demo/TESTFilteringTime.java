@@ -15,7 +15,7 @@ import joiner.server.DataServer;
 
 					/* CLASS FOR TESTING */
 
-public class Test {
+public class TESTFilteringTime {
 
 	private final static Logger logger = LoggerFactory.getLogger(Test.class);
 
@@ -36,7 +36,9 @@ public class Test {
 
 	public static void main(String[] args) throws Exception {
 		
-		String[] statics = new String[NUMTESTCASE];
+		Float elapsedChecking[] = new Float[NUMTESTCASE];
+		Float total[] = new Float[NUMTESTCASE];
+		Float rappTime[] = new Float[NUMTESTCASE];
 
 		// create the markers
 		Set<String> markers = new HashSet<String>();
@@ -66,12 +68,14 @@ public class Test {
 			Client client = new Client ("ThisIsASecretKey", markers, twin);
 			client.connect("tcp://127.0.0.1:5555");
 
+			
 			long initial = System.nanoTime();
 			client.join(sc1, sc2);
-			float elapsed = (System.nanoTime() - initial) / ((float) BILLION);
-			logger.info("Elapsed time: {} s", elapsed);
-
-			statics[i]=client.getStatics()+"\t"+elapsed+"\t"+i;
+			
+			total[i] = (System.nanoTime() - initial) / ((float) BILLION);
+			elapsedChecking[i]=client.getElapsedChecking();
+			rappTime[i]= elapsedChecking[i]/total[i];
+			
 			client.destroy();
 
 		}
@@ -80,10 +84,25 @@ public class Test {
 		logger.info("Domain from {} to {} ", DOMAINSTARTSAT, DOMAINENDSAT);
 		logger.info("Number of tulpes L: {} ", TUPLETABLEL);
 		logger.info("Number of tuples R: {} ", TUPLETABLER);
-		logger.info("DataReal\tDataSpurious\tErrPercent\tElapsedTime\tTreshold");
+		
+		float maxRapp = 0 ;
+		float maxRappFilt = 0 ;
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
-			logger.info("\t{}", statics[i]);
-				
+		{			
+			if ( rappTime[i] > maxRapp )
+					{
+						maxRapp = rappTime[i]; 
+						maxRappFilt = elapsedChecking[i];
+					}
+		}
+		
+		logger.info("\tCheckingTime\tRappTime\t\t");
+		
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
+			logger.info("\t{} s\t\t\t{} %", elapsedChecking[i],rappTime[i]);
+		
+		logger.info("Max time used for filtering\t{} s\t\t{}%", maxRappFilt, maxRapp);
+						
 	}
 }

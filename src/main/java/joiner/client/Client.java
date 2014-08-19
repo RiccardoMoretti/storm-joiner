@@ -68,7 +68,18 @@ public class Client extends Observable {
 	
 	private int outputPort1;
 	private int outputPort2;
-		
+	
+	private long initialChecking;
+	private float elapsedChecking;
+	
+	private long initialFinalJoinCommunication;
+	private float elapsedFinalJoinCommunication;
+	
+	private long initialFinalJoinComputation;
+	private float elapsedFinalJoinComputation;
+	
+	private float totalFinalJoinTime;
+	
 	public Client(String key, Set<String> markers, TwinFunction twin) throws Exception {
 		this.cipher = createCipher(key);
 		this.markers = markers;
@@ -134,7 +145,11 @@ public class Client extends Observable {
 		
 		socket.send("ACK");	
 		
+
 		// open the socket for request/receive data directly from data server 
+		
+		initialFinalJoinCommunication = System.nanoTime();
+		
 		initClientDataServer1();
 		initClientDataServer2();
 		
@@ -144,37 +159,31 @@ public class Client extends Observable {
 			  requestData1(request[u]);
 			  requestData2(request[u]);			  
 			}
-		
-		long initial = System.nanoTime();		
-		
+					
 		requestData1("");
 		requestData2("");
-		
-		float elapsed = (System.nanoTime() - initial) / ((float) BILLION);
-		//logger.info("Time for request data : {} s", elapsed);
-		
-		
-		initial = System.nanoTime();
-		
+				
 		// receive the request data from the data server
 		receiveRequestData1();	
 		receiveRequestData2();
 		
-		elapsed = (System.nanoTime() - initial) / ((float) BILLION);
-		//logger.info("Time for received data : {} s", elapsed);
-		
 		// end the two connection with the data server
 		contextDataServer1.destroy();
 		contextDataServer2.destroy();
-		
-		initial = System.nanoTime();
+				
+		elapsedFinalJoinCommunication = (System.nanoTime() -initialFinalJoinCommunication)/ ((float) BILLION);
+		initialFinalJoinComputation = System.nanoTime();
 		
 		// check if there are spurious tuples and validate the result received
+		initialChecking = System.nanoTime();
 		checkSpuriousTuple();
+		elapsedChecking = (System.nanoTime() - initialChecking) / ((float) BILLION);
+		
 		validateResult();
 		
-		elapsed = (System.nanoTime() - initial) / ((float) BILLION);
-		logger.info("Time for check/validate data : {} s", elapsed);
+		elapsedFinalJoinComputation = (System.nanoTime() - initialFinalJoinComputation) / ((float) BILLION);
+		
+		totalFinalJoinTime = elapsedFinalJoinCommunication + elapsedFinalJoinComputation ;
 		
 	}
 	
@@ -378,7 +387,28 @@ public class Client extends Observable {
 	{
 		return  dataReal+"\t"+ dataSpur + "\t" +( float ) ( ( (float) dataSpur ) / (float) joinResult ) * 100 ;
 	}
-		
+	
+	public String getDataReal()
+	{ 	return Integer.toString(dataReal);	}
+	
+	public String getDataSpur()
+	{	return Integer.toString(dataSpur);	}
+	
+	public String getRapp()
+	{	return Float.toString(( float ) ( ( (float) dataSpur ) / (float) joinResult ) * 100); }
+	
+	public float getElapsedChecking()
+	{	return elapsedChecking;		}
+	
+	public float getTotalFinalJoinTime()
+	{	return totalFinalJoinTime;	 }
+	
+	public float getElapsedFinalJoinCommunication()
+	{	return elapsedFinalJoinCommunication;	}
+	
+	public float getElapsedFinalJoinComputation()
+	{	return elapsedFinalJoinComputation;	}
+	
 }
 
 

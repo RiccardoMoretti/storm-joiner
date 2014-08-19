@@ -21,6 +21,10 @@ public class DataWorker extends Thread {
 
 	private final Logger logger = LoggerFactory.getLogger(DataWorker.class);
 	
+	private final static int THOUSAND = 1000;
+	private final static int MILLION  = THOUSAND * THOUSAND;
+	private final static int BILLION  = THOUSAND * MILLION;
+	
 	private final static int MAXDATA  = 1000000;
 	
 	private ZContext context;
@@ -53,6 +57,8 @@ public class DataWorker extends Thread {
 	
 	private ZipfGenerator Z;
 	private Domain D ;
+	
+	private float discretizingTime;
 
 	public DataWorker(int outputPort, DataServerRequest request, Cipher cipher, Set<String> markers, TwinFunction twin, int port, float min, float max, float soglia) {
 		this(outputPort, request, cipher, markers, twin, true, port, min, max , soglia);
@@ -74,7 +80,8 @@ public class DataWorker extends Thread {
 		this.portClient = port;
 		this.tempDisc = new float[2];	
 		this.D = new Domain(min,max,soglia);
-		this.Z = new ZipfGenerator ((int) D.getDomainSize(), 0.5 );
+		this.Z = new ZipfGenerator ((int) D.getDomainSize(), 0.8 );
+		this.discretizingTime = 0 ;
 				
 		parseRequest(request);
 	}
@@ -134,8 +141,10 @@ public class DataWorker extends Thread {
 					}
 				
 					random[i] = rand ;
-					discretized[i] = this.discretized(random[i]);	
-
+					long initial = System.nanoTime();				
+					discretized[i] = this.discretized(random[i]);						
+					float elapsed = (System.nanoTime() - initial) / ((float) BILLION);
+					discretizingTime = discretizingTime + elapsed;
 				}
 			
 				for (int i = 0 ; i < to ; ++i)
@@ -173,9 +182,7 @@ public class DataWorker extends Thread {
 				// Send all the markers (without their twins) [TODO shuffle them with the data]
 				for (String marker: markers)
 					encryptAndSend(marker, Prefix.MARKER, false); 
-			
-	
-		
+					
 				// Send the data (with the twins)		
 			
 				for (int i = 0 ; i < 2*to ; i = i + 2 )
@@ -198,11 +205,14 @@ public class DataWorker extends Thread {
 							
 				random[i] = rand ;
 				random[i+1] = rand ;
-				tempDisc = this.discretizedBis(random[i]);				
+				
+				long initial = System.nanoTime();
+				tempDisc = this.discretizedBis(random[i]);						
 				discretized[i] = tempDisc[0];
 				discretized[i+1] = tempDisc[1];
+				float elapsed = (System.nanoTime() - initial) / ((float) BILLION);
+				discretizingTime = discretizingTime + elapsed;
 			}
-	
 			
 			for (int i = 0 ; i < 2*to ; ++i)
 				encryptAndSend( Float.toString(discretized[i]), Prefix.DATA, true);
@@ -362,5 +372,8 @@ public class DataWorker extends Thread {
 		context.destroy();
 		super.finalize();
 	}
+
+	public float getDiscretizingTime()
+	{ 	return discretizingTime; 	}
 
 }

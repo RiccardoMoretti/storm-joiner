@@ -15,7 +15,7 @@ import joiner.server.DataServer;
 
 					/* CLASS FOR TESTING */
 
-public class Test {
+public class TESTFinalJoinTime {
 
 	private final static Logger logger = LoggerFactory.getLogger(Test.class);
 
@@ -36,7 +36,10 @@ public class Test {
 
 	public static void main(String[] args) throws Exception {
 		
-		String[] statics = new String[NUMTESTCASE];
+		Float timeCommunication[] = new Float[NUMTESTCASE];
+		Float timeComputation[] = new Float[NUMTESTCASE];
+		Float timeFinalJoin[] = new Float[NUMTESTCASE];
+		Float total[] = new Float[NUMTESTCASE];
 
 		// create the markers
 		Set<String> markers = new HashSet<String>();
@@ -66,12 +69,17 @@ public class Test {
 			Client client = new Client ("ThisIsASecretKey", markers, twin);
 			client.connect("tcp://127.0.0.1:5555");
 
+			
 			long initial = System.nanoTime();
+			
 			client.join(sc1, sc2);
-			float elapsed = (System.nanoTime() - initial) / ((float) BILLION);
-			logger.info("Elapsed time: {} s", elapsed);
-
-			statics[i]=client.getStatics()+"\t"+elapsed+"\t"+i;
+			
+			total[i] = (System.nanoTime() - initial) / ((float) BILLION);
+			
+			timeCommunication[i]= client.getElapsedFinalJoinCommunication();
+			timeComputation[i]= client.getElapsedFinalJoinComputation();
+			timeFinalJoin[i]= client.getTotalFinalJoinTime();
+			
 			client.destroy();
 
 		}
@@ -80,10 +88,25 @@ public class Test {
 		logger.info("Domain from {} to {} ", DOMAINSTARTSAT, DOMAINENDSAT);
 		logger.info("Number of tulpes L: {} ", TUPLETABLEL);
 		logger.info("Number of tuples R: {} ", TUPLETABLER);
-		logger.info("DataReal\tDataSpurious\tErrPercent\tElapsedTime\tTreshold");
+		
+		float maxFinalJoin = 0 ;
+		float maxRapp = 0 ;
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
-			logger.info("\t{}", statics[i]);
-				
+		{			
+			if ( timeFinalJoin[i]/total[i] > maxRapp )
+					{
+						maxFinalJoin = timeFinalJoin[i]; 
+						maxRapp = timeFinalJoin[i]/total[i];
+					}
+		}
+		
+		logger.info("\tCommunicationTime\tComputationTime\tTotal\tRapp");
+		
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
+			logger.info("\t{} s\t\t\t{} s\t\t\t{} s \t\t{} %", timeCommunication[i], timeComputation[i], timeFinalJoin[i], timeFinalJoin[i]/total[i]);
+		
+		logger.info("Max time used for final join\t{}\t\t{}%", maxFinalJoin, maxRapp);
+						
 	}
 }

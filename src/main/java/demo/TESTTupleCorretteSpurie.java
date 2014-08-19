@@ -15,13 +15,15 @@ import joiner.server.DataServer;
 
 					/* CLASS FOR TESTING */
 
-public class Test {
+/* Da variare:
+ *  - Domino dell'attributo di join, in termini di ampiezza dello stesso
+ *	- Distribuzione più o meno "piatta" dei valori dello stesso
+ *  - Cardinalità delle tabelle di input
+ */
+
+public class TESTTupleCorretteSpurie {
 
 	private final static Logger logger = LoggerFactory.getLogger(Test.class);
-
-	private final static int THOUSAND = 1000;
-	private final static int MILLION  = THOUSAND * THOUSAND;
-	private final static int BILLION  = THOUSAND * MILLION;
 
 	private final static int NUMMARKERS  = 100;
 	private final static int ONETWINEVERY  = 10;
@@ -36,7 +38,9 @@ public class Test {
 
 	public static void main(String[] args) throws Exception {
 		
-		String[] statics = new String[NUMTESTCASE];
+		String[] dataReal = new String[NUMTESTCASE];
+		String[] dataSpur = new String[NUMTESTCASE];
+		String[] rapp = new String[NUMTESTCASE];
 
 		// create the markers
 		Set<String> markers = new HashSet<String>();
@@ -66,12 +70,12 @@ public class Test {
 			Client client = new Client ("ThisIsASecretKey", markers, twin);
 			client.connect("tcp://127.0.0.1:5555");
 
-			long initial = System.nanoTime();
 			client.join(sc1, sc2);
-			float elapsed = (System.nanoTime() - initial) / ((float) BILLION);
-			logger.info("Elapsed time: {} s", elapsed);
 
-			statics[i]=client.getStatics()+"\t"+elapsed+"\t"+i;
+			dataReal[i]=client.getDataReal();
+			dataSpur[i]=client.getDataSpur();
+			rapp[i]=client.getRapp();
+			
 			client.destroy();
 
 		}
@@ -80,10 +84,25 @@ public class Test {
 		logger.info("Domain from {} to {} ", DOMAINSTARTSAT, DOMAINENDSAT);
 		logger.info("Number of tulpes L: {} ", TUPLETABLEL);
 		logger.info("Number of tuples R: {} ", TUPLETABLER);
-		logger.info("DataReal\tDataSpurious\tErrPercent\tElapsedTime\tTreshold");
+		logger.info("\tDataReal\tDataSpurious\tRapporto");
+		
+		int maxSpur = 0 ;
+		float maxRapp = 0 ;
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
-			logger.info("\t{}", statics[i]);
+		{			
+			if ( Integer.getInteger(dataSpur[i]) > maxSpur )
+					maxSpur = Integer.getInteger(dataSpur[i]);
+			
+			if ( Float.parseFloat(rapp[i]) > maxRapp )
+					maxRapp = Float.parseFloat(rapp[i]) ;			
+		}
+		
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
+			logger.info("\t{}\t\t\t{}\t\t{} %", dataReal[i],dataSpur[i],rapp[i]);
+		
+		logger.info("Max number of spurious tuples\t{}", maxSpur);
+		logger.info("Max rapp\t{} %", maxRapp);
 				
 	}
 }
