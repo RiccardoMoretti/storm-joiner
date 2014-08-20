@@ -24,9 +24,9 @@ public class ZipfGenerator {
      public ZipfGenerator(int size, double skew) {
              
     	 	this.size = size;
-             this.skew = skew;
+            this.skew = skew;
 
-             for (int i = 1; i < size; i++) 
+            for (int i = 1; i < size; i++) 
                      this.bottom += (1 / Math.pow(i, this.skew));
             
      }

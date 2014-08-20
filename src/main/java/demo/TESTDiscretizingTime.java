@@ -15,33 +15,32 @@ import joiner.server.DataServer;
 
 					/* CLASS FOR TESTING */
 
-/* Da variare:
- *  - Domino dell'attributo di join, in termini di ampiezza dello stesso
- *	- Distribuzione più o meno "piatta" dei valori dello stesso
- *  - Cardinalità delle tabelle di input
- */
-
-public class TESTTupleCorretteSpurie {
+public class TESTDiscretizingTime {
 
 	private final static Logger logger = LoggerFactory.getLogger(Test.class);
+
+	private final static int THOUSAND = 1000;
+	private final static int MILLION  = THOUSAND * THOUSAND;
+	private final static int BILLION  = THOUSAND * MILLION;
 
 	private final static int NUMMARKERS  = 100;
 	private final static int ONETWINEVERY  = 10;
 
 	private final static int DOMAINSTARTSAT  = 0;
-	private final static int DOMAINENDSAT  = 100;
+	private final static int DOMAINENDSAT  = 50;
 
-	private final static int TUPLETABLEL  = 35;
-	private final static int TUPLETABLER  = 35;
+	private final static int TUPLETABLEL  = 10;
+	private final static int TUPLETABLER  = 5;
 
 	private final static int NUMTESTCASE  = 5;
 
+
 	public static void main(String[] args) throws Exception {
 		
-		String[] dataReal = new String[NUMTESTCASE];
-		String[] dataSpur = new String[NUMTESTCASE];
-		String[] rapp = new String[NUMTESTCASE];
-
+		float elapsed[] = new float[NUMTESTCASE];
+		float discretizingTimeL[] = new float[NUMTESTCASE];
+		float discretizingTimeR[] = new float[NUMTESTCASE];
+		
 		// create the markers
 		Set<String> markers = new HashSet<String>();
 
@@ -60,7 +59,7 @@ public class TESTTupleCorretteSpurie {
 		{
 			// create the data server
 			DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , DOMAINSTARTSAT, DOMAINENDSAT, i + 1);
-			ds.last(NUMTESTCASE-1);
+			ds.last(4);
 			ds.start();
 
 			DataServerConnector sc1 = new DataServerConnector("tcp://127.0.0.1:3000", "1", Integer.toString(TUPLETABLEL));
@@ -70,12 +69,12 @@ public class TESTTupleCorretteSpurie {
 			Client client = new Client ("ThisIsASecretKey", markers, twin);
 			client.connect("tcp://127.0.0.1:5555");
 
+			long initial = System.nanoTime();
 			client.join(sc1, sc2);
+			elapsed[i] = (System.nanoTime() - initial) / ((float) BILLION);
 
-			dataReal[i]=client.getDataReal();
-			dataSpur[i]=client.getDataSpur();
-			rapp[i]=client.getRapp();
-			
+			discretizingTimeL[i] = client.getDiscretizingTime1(); 
+			discretizingTimeR[i] = client.getDiscretizingTime2();
 			client.destroy();
 
 		}
@@ -84,26 +83,10 @@ public class TESTTupleCorretteSpurie {
 		logger.info("Domain from {} to {} ", DOMAINSTARTSAT, DOMAINENDSAT);
 		logger.info("Number of tulpes L: {} ", TUPLETABLEL);
 		logger.info("Number of tuples R: {} ", TUPLETABLER);
-		
-		
-	/*	int maxSpur = 0 ;
-		float maxRapp = 0 ;
+		logger.info("DiscretizationTimeL\tDiscretizationTimeR\tTotalTimeExeceution\tRapp");
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
-		{			
-			if ( Integer.getInteger(dataSpur[i]) > maxSpur )
-					maxSpur = Integer.getInteger(dataSpur[i]);
-			
-			if ( Float.parseFloat(rapp[i]) > maxRapp )
-					maxRapp = Float.parseFloat(rapp[i]) ;			
-	}*/
-		
-		logger.info("\tDataReal\tDataSpurious\tRapporto");
-		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
-			logger.info("\t{}\t\t\t{}\t\t{} %", dataReal[i],dataSpur[i],rapp[i]);
-		
-	/*	logger.info("Max number of spurious tuples\t{}", maxSpur);
-		logger.info("Max rapp\t{} %", maxRapp);*/
+			logger.info("\t{}\t\t\t{}\t\t\t\t{}\t\t{}",discretizingTimeL[i],discretizingTimeR[i],elapsed[i],( (discretizingTimeL[i]+discretizingTimeR[i])/elapsed[i]) );
 				
 	}
 }

@@ -65,6 +65,10 @@ public class Demo {
 		float elapsed = (System.nanoTime() - initial) / ((float) BILLION);
 		logger.info("Elapsed time: {} s", elapsed);
 		
+		float dis1=  client.getDiscretizingTime1();
+		float dis2 = client.getDiscretizingTime2();
+		System.out.println("\t"+dis1+"\t"+dis2);
+		
 		client.destroy();
 	}
 	

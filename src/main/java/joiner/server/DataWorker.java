@@ -80,7 +80,7 @@ public class DataWorker extends Thread {
 		this.portClient = port;
 		this.tempDisc = new float[2];	
 		this.D = new Domain(min,max,soglia);
-		this.Z = new ZipfGenerator ((int) D.getDomainSize(), 0.8 );
+		this.Z = new ZipfGenerator ((int) D.getDomainSize(), 15 );
 		this.discretizingTime = 0 ;
 				
 		parseRequest(request);
@@ -157,10 +157,10 @@ public class DataWorker extends Thread {
 				while(!done)
 					Thread.sleep(100);
 			
-				System.out.println( "\t\tTABLE L");
+			/*	System.out.println( "\t\tTABLE L");
 				for ( int u = 0 ; u < to ; u++ )
 					System.out.println( "Original:\t"+random[u]+"\tDiscretized:\t"+discretized[u]);
-
+			 */
 			} catch ( Exception e ) {
 
 				logger.error(e.getMessage());
@@ -224,10 +224,10 @@ public class DataWorker extends Thread {
 			while(!done)
 				Thread.sleep(100);
 			
-			System.out.println( "\t\tTABLE R");
+		/*	System.out.println( "\t\tTABLE R");
 			for ( int u = 0 ; u < 2*to ; u++ )
 				System.out.println( "Original:\t"+random[u]+"\tDiscretized:\t"+discretized[u]);
-
+				*/
 		} catch ( Exception e ) {
 
 			logger.error(e.getMessage());
@@ -246,6 +246,8 @@ public class DataWorker extends Thread {
 		
 		// responde at the client request
 		respondeRequest();
+		
+		sendDiscretizingTime();
 		
 		// close the socket with the client
 		destroyClientDataServer();
@@ -360,10 +362,14 @@ public class DataWorker extends Thread {
 			for ( int k = 0 ; k < y ; k++ )
 				for ( int q = 0 ; q < 2*to ; q++)
 					if ( received[k].equals(Float.toString(discretized[q]))) 					  
-						socketClient.send(Float.toString(random[q])+"\t"+ Float.toString(discretized[q]));
-			
-			
+						socketClient.send(Float.toString(random[q])+"\t"+ Float.toString(discretized[q]));			
 		}
+			socketClient.send("");
+	}
+	
+	private void sendDiscretizingTime()
+	{	
+			socketClient.send(Float.toString(discretizingTime));
 			socketClient.send("");
 	}
 	

@@ -80,6 +80,9 @@ public class Client extends Observable {
 	
 	private float totalFinalJoinTime;
 	
+	private String discretizingTime1;
+	private String discretizingTime2;
+	
 	public Client(String key, Set<String> markers, TwinFunction twin) throws Exception {
 		this.cipher = createCipher(key);
 		this.markers = markers;
@@ -104,6 +107,8 @@ public class Client extends Observable {
 		this.joinSpurious = new String[MAXDATA];
 		this.dataSpur = 0 ;
 		this.eq = false;
+		this.discretizingTime1 = "" ;
+		this.discretizingTime2 = "" ;
 
 	}
 	
@@ -166,6 +171,9 @@ public class Client extends Observable {
 		// receive the request data from the data server
 		receiveRequestData1();	
 		receiveRequestData2();
+		
+		receiveDiscretizingTime1();
+		receiveDiscretizingTime2();
 		
 		// end the two connection with the data server
 		contextDataServer1.destroy();
@@ -356,6 +364,20 @@ public class Client extends Observable {
 			}
 	}
 	
+	private void receiveDiscretizingTime1()
+	{
+		while ( true )
+			{
+		
+				Bytes msg = new Bytes ( socketDataServer1.recv() );
+		
+				if (msg.isEmpty())
+						break;	
+    	
+				discretizingTime1 = msg.toString();		
+			}
+	}
+	
 	private void initClientDataServer2()
 	{	outputPort2 = 6004 ;
 		contextDataServer2 = new ZContext();
@@ -380,6 +402,21 @@ public class Client extends Observable {
     	
 				received2[cont1] = msg.toString();
 				cont1++;		
+			}
+	}
+	
+	private void receiveDiscretizingTime2()
+	{
+		while ( true )
+			{
+		
+				Bytes msg = new Bytes ( socketDataServer2.recv() );
+		
+				if (msg.isEmpty())
+						break;
+    	
+				discretizingTime2 = msg.toString();
+				
 			}
 	}
 	
@@ -408,6 +445,12 @@ public class Client extends Observable {
 	
 	public float getElapsedFinalJoinComputation()
 	{	return elapsedFinalJoinComputation;	}
+	
+	public float getDiscretizingTime1()
+	{	return Float.parseFloat(discretizingTime1); }
+	
+	public float getDiscretizingTime2()
+	{	return Float.parseFloat(discretizingTime2);}
 	
 }
 
