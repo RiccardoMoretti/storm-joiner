@@ -80,7 +80,7 @@ public class DataWorker extends Thread {
 		this.portClient = port;
 		this.tempDisc = new float[2];	
 		this.D = new Domain(min,max,soglia);
-		this.Z = new ZipfGenerator ((int) D.getDomainSize(), 15 );
+		this.Z = new ZipfGenerator ((int) D.getDomainSize(), 0.5 );
 		this.discretizingTime = 0 ;
 				
 		parseRequest(request);

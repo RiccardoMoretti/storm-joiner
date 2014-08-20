@@ -170,9 +170,9 @@ public class Client extends Observable {
 				
 		// receive the request data from the data server
 		receiveRequestData1();	
-		receiveRequestData2();
-		
 		receiveDiscretizingTime1();
+		
+		receiveRequestData2();
 		receiveDiscretizingTime2();
 		
 		// end the two connection with the data server

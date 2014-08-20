@@ -29,19 +29,18 @@ public class TESTTupleCorretteSpurie {
 	private final static int ONETWINEVERY  = 10;
 
 	private final static int DOMAINSTARTSAT  = 0;
-	private final static int DOMAINENDSAT  = 100;
+	private final static int DOMAINENDSAT  = 50;
 
-	private final static int TUPLETABLEL  = 35;
-	private final static int TUPLETABLER  = 35;
+	private final static int TUPLETABLEL  = 10;
+	private final static int TUPLETABLER  = 5;
 
-	private final static int NUMTESTCASE  = 5;
+	private final static int NUMTESTCASE  = 2;
 
 	public static void main(String[] args) throws Exception {
 		
-		String[] dataReal = new String[NUMTESTCASE];
-		String[] dataSpur = new String[NUMTESTCASE];
-		String[] rapp = new String[NUMTESTCASE];
-
+		float dataReal[] = new float[NUMTESTCASE];
+		float dataSpur[] = new float[NUMTESTCASE];
+		
 		// create the markers
 		Set<String> markers = new HashSet<String>();
 
@@ -60,7 +59,7 @@ public class TESTTupleCorretteSpurie {
 		{
 			// create the data server
 			DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , DOMAINSTARTSAT, DOMAINENDSAT, i + 1);
-			ds.last(NUMTESTCASE-1);
+			ds.last(4);
 			ds.start();
 
 			DataServerConnector sc1 = new DataServerConnector("tcp://127.0.0.1:3000", "1", Integer.toString(TUPLETABLEL));
@@ -69,13 +68,12 @@ public class TESTTupleCorretteSpurie {
 			// create the client
 			Client client = new Client ("ThisIsASecretKey", markers, twin);
 			client.connect("tcp://127.0.0.1:5555");
-
-			client.join(sc1, sc2);
-
-			dataReal[i]=client.getDataReal();
-			dataSpur[i]=client.getDataSpur();
-			rapp[i]=client.getRapp();
 			
+			client.join(sc1, sc2);
+			
+			dataReal[i] = Float.parseFloat(client.getDataReal());
+			dataSpur[i] = Float.parseFloat(client.getDataSpur());
+						
 			client.destroy();
 
 		}
@@ -84,26 +82,51 @@ public class TESTTupleCorretteSpurie {
 		logger.info("Domain from {} to {} ", DOMAINSTARTSAT, DOMAINENDSAT);
 		logger.info("Number of tulpes L: {} ", TUPLETABLEL);
 		logger.info("Number of tuples R: {} ", TUPLETABLER);
-		
-		
-	/*	int maxSpur = 0 ;
-		float maxRapp = 0 ;
-		
-		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
-		{			
-			if ( Integer.getInteger(dataSpur[i]) > maxSpur )
-					maxSpur = Integer.getInteger(dataSpur[i]);
+		System.out.println("");
 			
-			if ( Float.parseFloat(rapp[i]) > maxRapp )
-					maxRapp = Float.parseFloat(rapp[i]) ;			
-	}*/
+		logger.info("\tDataReal\tDataSpur\tTotal\t\tErrPercent");
 		
-		logger.info("\tDataReal\tDataSpurious\tRapporto");
-		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
-			logger.info("\t{}\t\t\t{}\t\t{} %", dataReal[i],dataSpur[i],rapp[i]);
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
+			{ 
+			  float total = dataReal[i]+dataSpur[i];
+			  float errPerc = (dataSpur[i]/(dataReal[i]+dataSpur[i]))*100;
+			  logger.info("\t{}\t\t{}\t\t{}\t\t{} %", dataReal[i], dataSpur[i], total , errPerc );
+			}
 		
-	/*	logger.info("Max number of spurious tuples\t{}", maxSpur);
-		logger.info("Max rapp\t{} %", maxRapp);*/
-				
+		
+		
+		float NmaxSpur = 0;
+		float NmaxReal = 0;
+		float NmaxErrPerc = 0 ;
+		
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
+		{ 
+		  if ( dataSpur[i] > NmaxSpur )
+		  {
+			  NmaxSpur = dataSpur[i];
+			  NmaxReal = dataReal[i];
+			  NmaxErrPerc = (dataSpur[i]/(dataReal[i]+dataSpur[i]))*100 ;
+		  }
+		}
+		
+		System.out.println("");
+		logger.info("Max number of spurious tuples \t{} spur\t{} real \t{} %", NmaxSpur, NmaxReal, NmaxErrPerc);
+		
+		float maxSpur = 0;
+		float maxReal = 0;
+		float maxErrPerc = 0 ;
+		
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
+		{ 
+		  if ( (dataSpur[i]/(dataReal[i]+dataSpur[i]))*100 > maxErrPerc )
+		  {
+			  maxSpur = dataSpur[i];
+			  maxReal = dataReal[i];
+			  maxErrPerc = (dataSpur[i]/(dataReal[i]+dataSpur[i]))*100 ;
+		  }
+		}
+		
+		System.out.println("");
+		logger.info("Max number of Err percent \t{}%\t{} spur\t{} real ",maxErrPerc, maxSpur, maxReal);
 	}
 }

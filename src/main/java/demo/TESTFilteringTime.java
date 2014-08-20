@@ -32,7 +32,7 @@ public class TESTFilteringTime {
 	private final static int TUPLETABLEL  = 10;
 	private final static int TUPLETABLER  = 5;
 
-	private final static int NUMTESTCASE  = 5;
+	private final static int NUMTESTCASE  = 2;
 
 	public static void main(String[] args) throws Exception {
 		
@@ -84,7 +84,7 @@ public class TESTFilteringTime {
 		logger.info("Domain from {} to {} ", DOMAINSTARTSAT, DOMAINENDSAT);
 		logger.info("Number of tulpes L: {} ", TUPLETABLEL);
 		logger.info("Number of tuples R: {} ", TUPLETABLER);
-		
+		System.out.println("");
 		float maxRapp = 0 ;
 		float maxRappFilt = 0 ;
 		
@@ -100,8 +100,8 @@ public class TESTFilteringTime {
 		logger.info("\tCheckingTime\tRappTime\t\t");
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
-			logger.info("\t{} s\t\t\t{} %", elapsedChecking[i],rappTime[i]);
-		
+			logger.info("\t{} s\t{} %", elapsedChecking[i],rappTime[i]);
+		System.out.println("");
 		logger.info("Max time used for filtering\t{} s\t\t{}%", maxRappFilt, maxRapp);
 						
 	}

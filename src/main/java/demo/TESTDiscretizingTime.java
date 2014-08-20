@@ -32,12 +32,13 @@ public class TESTDiscretizingTime {
 	private final static int TUPLETABLEL  = 10;
 	private final static int TUPLETABLER  = 5;
 
-	private final static int NUMTESTCASE  = 5;
+	private final static int NUMTESTCASE  = 2;
 
 
 	public static void main(String[] args) throws Exception {
 		
 		float elapsed[] = new float[NUMTESTCASE];
+		long initial[] = new long[NUMTESTCASE];
 		float discretizingTimeL[] = new float[NUMTESTCASE];
 		float discretizingTimeR[] = new float[NUMTESTCASE];
 		
@@ -69,10 +70,9 @@ public class TESTDiscretizingTime {
 			Client client = new Client ("ThisIsASecretKey", markers, twin);
 			client.connect("tcp://127.0.0.1:5555");
 
-			long initial = System.nanoTime();
+			initial[i] = System.nanoTime();
 			client.join(sc1, sc2);
-			elapsed[i] = (System.nanoTime() - initial) / ((float) BILLION);
-
+			elapsed[i] = (System.nanoTime() - initial[i]) / ((float) BILLION);
 			discretizingTimeL[i] = client.getDiscretizingTime1(); 
 			discretizingTimeR[i] = client.getDiscretizingTime2();
 			client.destroy();
@@ -83,10 +83,11 @@ public class TESTDiscretizingTime {
 		logger.info("Domain from {} to {} ", DOMAINSTARTSAT, DOMAINENDSAT);
 		logger.info("Number of tulpes L: {} ", TUPLETABLEL);
 		logger.info("Number of tuples R: {} ", TUPLETABLER);
+		System.out.println("");
 		logger.info("DiscretizationTimeL\tDiscretizationTimeR\tTotalTimeExeceution\tRapp");
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
-			logger.info("\t{}\t\t\t{}\t\t\t\t{}\t\t{}",discretizingTimeL[i],discretizingTimeR[i],elapsed[i],( (discretizingTimeL[i]+discretizingTimeR[i])/elapsed[i]) );
+			logger.info("\t{}\t\t{}\t\t{}\t\t{}",discretizingTimeL[i],discretizingTimeR[i],elapsed[i],( (discretizingTimeL[i]+discretizingTimeR[i])/elapsed[i]) );
 				
 	}
 }

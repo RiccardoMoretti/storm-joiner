@@ -32,7 +32,7 @@ public class Test {
 	private final static int TUPLETABLEL  = 10;
 	private final static int TUPLETABLER  = 5;
 
-	private final static int NUMTESTCASE  = 5;
+	private final static int NUMTESTCASE  = 6;
 
 	public static void main(String[] args) throws Exception {
 		
@@ -83,7 +83,6 @@ public class Test {
 		logger.info("DataReal\tDataSpurious\tErrPercent\tElapsedTime\tTreshold");
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
-			logger.info("\t{}", statics[i]);
-				
+			logger.info("\t{}", statics[i]);				
 	}
 }

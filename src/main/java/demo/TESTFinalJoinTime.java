@@ -32,7 +32,7 @@ public class TESTFinalJoinTime {
 	private final static int TUPLETABLEL  = 10;
 	private final static int TUPLETABLER  = 5;
 
-	private final static int NUMTESTCASE  = 5;
+	private final static int NUMTESTCASE  = 2;
 
 	public static void main(String[] args) throws Exception {
 		
@@ -88,6 +88,7 @@ public class TESTFinalJoinTime {
 		logger.info("Domain from {} to {} ", DOMAINSTARTSAT, DOMAINENDSAT);
 		logger.info("Number of tulpes L: {} ", TUPLETABLEL);
 		logger.info("Number of tuples R: {} ", TUPLETABLER);
+		System.out.println("");
 		
 		float maxFinalJoin = 0 ;
 		float maxRapp = 0 ;
@@ -101,12 +102,13 @@ public class TESTFinalJoinTime {
 					}
 		}
 		
-		logger.info("\tCommunicationTime\tComputationTime\tTotal\tRapp");
+		logger.info("\tCommunicationTime\tComputationTime\t\tTotal\t\tRapp");
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
-			logger.info("\t{} s\t\t\t{} s\t\t\t{} s \t\t{} %", timeCommunication[i], timeComputation[i], timeFinalJoin[i], timeFinalJoin[i]/total[i]);
+			logger.info("\t{} s\t\t{} s\t\t{} s \t{} %", timeCommunication[i], timeComputation[i], timeFinalJoin[i], timeFinalJoin[i]/total[i]);
 		
-		logger.info("Max time used for final join\t{}\t\t{}%", maxFinalJoin, maxRapp);
+		System.out.println("");
+		logger.info("Max time used for final join\t{}\t{}%", maxFinalJoin, maxRapp);
 						
 	}
 }
