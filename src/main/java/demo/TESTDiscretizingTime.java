@@ -13,6 +13,8 @@ import joiner.commons.twins.TwinFunction;
 import joiner.computational.ComputationalServer;
 import joiner.server.DataServer;
 
+import java.io.*;
+
 					/* CLASS FOR TESTING */
 
 public class TESTDiscretizingTime {
@@ -23,17 +25,16 @@ public class TESTDiscretizingTime {
 	private final static int MILLION  = THOUSAND * THOUSAND;
 	private final static int BILLION  = THOUSAND * MILLION;
 
-	private final static int NUMMARKERS  = 100;
+	private final static int NUMMARKERS  = 50;
 	private final static int ONETWINEVERY  = 10;
 
 	private final static int DOMAINSTARTSAT  = 0;
-	private final static int DOMAINENDSAT  = 50;
+	private final static int DOMAINENDSAT  = 250;
 
-	private final static int TUPLETABLEL  = 10;
-	private final static int TUPLETABLER  = 5;
+	private final static int TUPLETABLEL  = 5;
+	private final static int TUPLETABLER  = 3;
 
-	private final static int NUMTESTCASE  = 2;
-
+	private final static int NUMTESTCASE  = 10;
 
 	public static void main(String[] args) throws Exception {
 		
@@ -87,7 +88,31 @@ public class TESTDiscretizingTime {
 		logger.info("DiscretizationTimeL\tDiscretizationTimeR\tTotalTimeExeceution\tRapp");
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
-			logger.info("\t{}\t\t{}\t\t{}\t\t{}",discretizingTimeL[i],discretizingTimeR[i],elapsed[i],( (discretizingTimeL[i]+discretizingTimeR[i])/elapsed[i]) );
+			logger.info("\t{}\t\t{}\t\t{}\t\t{} %",discretizingTimeL[i],discretizingTimeR[i],elapsed[i],( (discretizingTimeL[i]+discretizingTimeR[i])/elapsed[i])*100 );
+		
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
+		{
+			String filenameL= "/Users/Riccardo Moretti/Dropbox/Università/Tesi/Test/2TempoDiscretizzazioneL.txt";
+			FileWriter fwL = new FileWriter(filenameL,true); //the true will append the new data
+			fwL.write(System.lineSeparator()+discretizingTimeL[i]);//appends the string to the file
+			fwL.close();
+		}
 				
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
+		{	
+			String filenameR= "/Users/Riccardo Moretti/Dropbox/Università/Tesi/Test/2TempoDiscretizzazioneR.txt";
+		    FileWriter fwR = new FileWriter(filenameR,true); //the true will append the new data
+			fwR.write(System.lineSeparator()+discretizingTimeR[i]);//appends the string to the file
+			fwR.close();
+		}
+		
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
+		{
+		     String filenameT= "/Users/Riccardo Moretti/Dropbox/Università/Tesi/Test/2TempoTotale.txt";
+		     FileWriter fwT = new FileWriter(filenameT,true); //the true will append the new data
+			 fwT.write(System.lineSeparator()+elapsed[i]);//appends the string to the file
+			 fwT.close();
+		}
+	
 	}
 }

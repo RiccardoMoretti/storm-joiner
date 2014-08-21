@@ -1,5 +1,6 @@
 package demo;
 
+import java.io.FileWriter;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,7 +26,7 @@ public class TESTTupleCorretteSpurie {
 
 	private final static Logger logger = LoggerFactory.getLogger(Test.class);
 
-	private final static int NUMMARKERS  = 100;
+	private final static int NUMMARKERS  = 50;
 	private final static int ONETWINEVERY  = 10;
 
 	private final static int DOMAINSTARTSAT  = 0;
@@ -34,7 +35,7 @@ public class TESTTupleCorretteSpurie {
 	private final static int TUPLETABLEL  = 10;
 	private final static int TUPLETABLER  = 5;
 
-	private final static int NUMTESTCASE  = 2;
+	private final static int NUMTESTCASE  = 10;
 
 	public static void main(String[] args) throws Exception {
 		
@@ -128,5 +129,22 @@ public class TESTTupleCorretteSpurie {
 		
 		System.out.println("");
 		logger.info("Max number of Err percent \t{}%\t{} spur\t{} real ",maxErrPerc, maxSpur, maxReal);
+	
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
+		{
+		     String filename= "/Users/Riccardo Moretti/Dropbox/Università/Tesi/Test/1TupleCorrette.txt";
+		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
+			 fw.write(System.lineSeparator()+dataReal[i]);//appends the string to the file
+			 fw.close();
+		}
+		
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
+		{
+		     String filename= "/Users/Riccardo Moretti/Dropbox/Università/Tesi/Test/1TupleSpurie.txt";
+		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
+			 fw.write(System.lineSeparator()+dataSpur[i]);//appends the string to the file
+			 fw.close();
+		}
+	
 	}
 }

@@ -1,5 +1,6 @@
 package demo;
 
+import java.io.FileWriter;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,7 +24,7 @@ public class TESTFinalJoinTime {
 	private final static int MILLION  = THOUSAND * THOUSAND;
 	private final static int BILLION  = THOUSAND * MILLION;
 
-	private final static int NUMMARKERS  = 100;
+	private final static int NUMMARKERS  = 50;
 	private final static int ONETWINEVERY  = 10;
 
 	private final static int DOMAINSTARTSAT  = 0;
@@ -32,7 +33,7 @@ public class TESTFinalJoinTime {
 	private final static int TUPLETABLEL  = 10;
 	private final static int TUPLETABLER  = 5;
 
-	private final static int NUMTESTCASE  = 2;
+	private final static int NUMTESTCASE  = 10;
 
 	public static void main(String[] args) throws Exception {
 		
@@ -109,6 +110,38 @@ public class TESTFinalJoinTime {
 		
 		System.out.println("");
 		logger.info("Max time used for final join\t{}\t{}%", maxFinalJoin, maxRapp);
-						
+				
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
+		{
+		     String filename= "/Users/Riccardo Moretti/Dropbox/Università/Tesi/Test/4CommunicationTime.txt";
+		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
+			 fw.write(System.lineSeparator()+timeCommunication[i]);//appends the string to the file
+			 fw.close();
+		}
+		
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
+		{
+		     String filename= "/Users/Riccardo Moretti/Dropbox/Università/Tesi/Test/4ComputationTime.txt";
+		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
+			 fw.write(System.lineSeparator()+timeComputation[i]);//appends the string to the file
+			 fw.close();
+		}
+		
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
+		{
+		     String filename= "/Users/Riccardo Moretti/Dropbox/Università/Tesi/Test/4FinalJoinTime.txt";
+		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
+			 fw.write(System.lineSeparator()+timeFinalJoin[i]);//appends the string to the file
+			 fw.close();
+		}
+		
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
+		{
+		     String filename= "/Users/Riccardo Moretti/Dropbox/Università/Tesi/Test/4TempoTotale.txt";
+		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
+			 fw.write(System.lineSeparator()+total[i]);//appends the string to the file
+			 fw.close();
+		}
+		
 	}
 }

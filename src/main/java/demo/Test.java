@@ -32,7 +32,7 @@ public class Test {
 	private final static int TUPLETABLEL  = 10;
 	private final static int TUPLETABLER  = 5;
 
-	private final static int NUMTESTCASE  = 6;
+	private final static int NUMTESTCASE  = 5;
 
 	public static void main(String[] args) throws Exception {
 		

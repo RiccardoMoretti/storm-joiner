@@ -112,7 +112,7 @@ public class DataWorker extends Thread {
 
 				// Open the output socket
 				socket.bind("tcp://*:" + outputPort);
-				logger.info("Start pushing data to port {}", outputPort);
+				//////logger.info("Start pushing data to port {}", outputPort);
 			
 				// Send all the markers (without their twins) [TODO shuffle them with the data]
 				for (String marker: markers)
@@ -177,7 +177,7 @@ public class DataWorker extends Thread {
 
 				// Open the output socket
 				socket.bind("tcp://*:" + outputPort);
-				logger.info("Start pushing data to port {}", outputPort);
+				//////logger.info("Start pushing data to port {}", outputPort);
 			
 				// Send all the markers (without their twins) [TODO shuffle them with the data]
 				for (String marker: markers)

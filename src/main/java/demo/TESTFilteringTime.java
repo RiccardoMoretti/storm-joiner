@@ -13,6 +13,8 @@ import joiner.commons.twins.TwinFunction;
 import joiner.computational.ComputationalServer;
 import joiner.server.DataServer;
 
+import java.io.*;
+
 					/* CLASS FOR TESTING */
 
 public class TESTFilteringTime {
@@ -23,7 +25,7 @@ public class TESTFilteringTime {
 	private final static int MILLION  = THOUSAND * THOUSAND;
 	private final static int BILLION  = THOUSAND * MILLION;
 
-	private final static int NUMMARKERS  = 100;
+	private final static int NUMMARKERS  = 50;
 	private final static int ONETWINEVERY  = 10;
 
 	private final static int DOMAINSTARTSAT  = 0;
@@ -32,7 +34,7 @@ public class TESTFilteringTime {
 	private final static int TUPLETABLEL  = 10;
 	private final static int TUPLETABLER  = 5;
 
-	private final static int NUMTESTCASE  = 2;
+	private final static int NUMTESTCASE  = 10;
 
 	public static void main(String[] args) throws Exception {
 		
@@ -103,6 +105,22 @@ public class TESTFilteringTime {
 			logger.info("\t{} s\t{} %", elapsedChecking[i],rappTime[i]);
 		System.out.println("");
 		logger.info("Max time used for filtering\t{} s\t\t{}%", maxRappFilt, maxRapp);
-						
+		
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
+		{
+		     String filename= "/Users/Riccardo Moretti/Dropbox/Università/Tesi/Test/3FilteringCheckingTime.txt";
+		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
+			 fw.write(System.lineSeparator()+elapsedChecking[i]);//appends the string to the file
+			 fw.close();
+		}
+		
+		
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
+		{
+		     String filename= "/Users/Riccardo Moretti/Dropbox/Università/Tesi/Test/3TempoTotale.txt";
+		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
+			 fw.write(System.lineSeparator()+total[i]);//appends the string to the file
+			 fw.close();
+		}
 	}
 }
