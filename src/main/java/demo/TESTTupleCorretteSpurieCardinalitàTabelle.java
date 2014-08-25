@@ -22,20 +22,19 @@ import joiner.server.DataServer;
  *  - Cardinalit‡ delle tabelle di input
  */
 
-public class TESTTupleCorretteSpurie {
+public class TESTTupleCorretteSpurieCardinalit‡Tabelle {
 
 	private final static Logger logger = LoggerFactory.getLogger(Test.class);
 
-	private final static int NUMMARKERS  = 50;
-	private final static int ONETWINEVERY  = 10;
+	private final static int NUMMARKERS  = 100;
+	private final static int ONETWINEVERY  = 25;
 
 	private final static int DOMAINSTARTSAT  = 0;
-	private final static int DOMAINENDSAT  = 50;
+	private final static int DOMAINENDSAT  = 10000;
 
-	private final static int TUPLETABLEL  = 10;
-	private final static int TUPLETABLER  = 5;
-
-	private final static int NUMTESTCASE  = 10;
+	private final static int NUMTESTCASE  = 100;
+	
+	private final static int SOGLIA  = 5;
 
 	public static void main(String[] args) throws Exception {
 		
@@ -56,10 +55,16 @@ public class TESTTupleCorretteSpurie {
 		cs.last(NUMTESTCASE);
 		cs.start();
 
+		int TUPLETABLEL  = 0;
+		int TUPLETABLER  = 0;
+		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
 		{
+			TUPLETABLEL  = TUPLETABLEL + 50;
+			TUPLETABLER  = TUPLETABLER + 50;
+			
 			// create the data server
-			DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , DOMAINSTARTSAT, DOMAINENDSAT, i + 1);
+			DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , DOMAINSTARTSAT, DOMAINENDSAT, SOGLIA);
 			ds.last(4);
 			ds.start();
 
@@ -132,7 +137,7 @@ public class TESTTupleCorretteSpurie {
 	
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
 		{
-		     String filename= "/Users/Riccardo Moretti/Dropbox/Universit‡/Tesi/Test/1TupleCorrette.txt";
+		     String filename= "C:/Users/Moretti/Dropbox/Universit‡/Tesi/Test/1TupleCorretteCardTabelle.txt";
 		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
 			 fw.write(System.lineSeparator()+dataReal[i]);//appends the string to the file
 			 fw.close();
@@ -140,7 +145,7 @@ public class TESTTupleCorretteSpurie {
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
 		{
-		     String filename= "/Users/Riccardo Moretti/Dropbox/Universit‡/Tesi/Test/1TupleSpurie.txt";
+		     String filename= "C:/Users/Moretti/Dropbox/Universit‡/Tesi/Test/1TupleSpurieCardTabelle.txt";
 		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
 			 fw.write(System.lineSeparator()+dataSpur[i]);//appends the string to the file
 			 fw.close();

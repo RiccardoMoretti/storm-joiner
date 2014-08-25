@@ -1,5 +1,6 @@
 package demo;
 
+import java.io.FileWriter;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,11 +14,9 @@ import joiner.commons.twins.TwinFunction;
 import joiner.computational.ComputationalServer;
 import joiner.server.DataServer;
 
-import java.io.*;
-
 					/* CLASS FOR TESTING */
 
-public class TESTFilteringTime {
+public class TESTFinalJoinTimeCardinalit‡Tabelle {
 
 	private final static Logger logger = LoggerFactory.getLogger(Test.class);
 
@@ -25,22 +24,22 @@ public class TESTFilteringTime {
 	private final static int MILLION  = THOUSAND * THOUSAND;
 	private final static int BILLION  = THOUSAND * MILLION;
 
-	private final static int NUMMARKERS  = 50;
-	private final static int ONETWINEVERY  = 10;
+	private final static int NUMMARKERS  = 100;
+	private final static int ONETWINEVERY  = 25;
 
 	private final static int DOMAINSTARTSAT  = 0;
-	private final static int DOMAINENDSAT  = 50;
+	private final static int DOMAINENDSAT  = 10000;
+	
+	private final static int SOGLIA  = 5;
 
-	private final static int TUPLETABLEL  = 10;
-	private final static int TUPLETABLER  = 5;
-
-	private final static int NUMTESTCASE  = 10;
-
+	private final static int NUMTESTCASE  = 100;
+	
 	public static void main(String[] args) throws Exception {
 		
-		Float elapsedChecking[] = new Float[NUMTESTCASE];
+		Float timeCommunication[] = new Float[NUMTESTCASE];
+		Float timeComputation[] = new Float[NUMTESTCASE];
+		Float timeFinalJoin[] = new Float[NUMTESTCASE];
 		Float total[] = new Float[NUMTESTCASE];
-		Float rappTime[] = new Float[NUMTESTCASE];
 
 		// create the markers
 		Set<String> markers = new HashSet<String>();
@@ -56,10 +55,16 @@ public class TESTFilteringTime {
 		cs.last(NUMTESTCASE);
 		cs.start();
 
+		int TUPLETABLEL  = 0;
+		int TUPLETABLER  = 0;
+		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
 		{
+			TUPLETABLEL  = TUPLETABLEL + 50;
+			TUPLETABLER  = TUPLETABLER + 50;
+						
 			// create the data server
-			DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , DOMAINSTARTSAT, DOMAINENDSAT, i + 1);
+			DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , DOMAINSTARTSAT, DOMAINENDSAT, SOGLIA);
 			ds.last(4);
 			ds.start();
 
@@ -72,11 +77,14 @@ public class TESTFilteringTime {
 
 			
 			long initial = System.nanoTime();
+			
 			client.join(sc1, sc2);
 			
 			total[i] = (System.nanoTime() - initial) / ((float) BILLION);
-			elapsedChecking[i]=client.getElapsedChecking();
-			rappTime[i]= elapsedChecking[i]/total[i];
+			
+			timeCommunication[i]= client.getElapsedFinalJoinCommunication();
+			timeComputation[i]= client.getElapsedFinalJoinComputation();
+			timeFinalJoin[i]= client.getTotalFinalJoinTime();
 			
 			client.destroy();
 
@@ -87,40 +95,58 @@ public class TESTFilteringTime {
 		logger.info("Number of tulpes L: {} ", TUPLETABLEL);
 		logger.info("Number of tuples R: {} ", TUPLETABLER);
 		System.out.println("");
+		
+		float maxFinalJoin = 0 ;
 		float maxRapp = 0 ;
-		float maxRappFilt = 0 ;
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
 		{			
-			if ( rappTime[i] > maxRapp )
+			if ( timeFinalJoin[i]/total[i] > maxRapp )
 					{
-						maxRapp = rappTime[i]; 
-						maxRappFilt = elapsedChecking[i];
+						maxFinalJoin = timeFinalJoin[i]; 
+						maxRapp = timeFinalJoin[i]/total[i];
 					}
 		}
 		
-		logger.info("\tCheckingTime\tRappTime\t\t");
+		logger.info("\tCommunicationTime\tComputationTime\t\tTotal\t\tRapp");
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
-			logger.info("\t{} s\t{} %", elapsedChecking[i],rappTime[i]);
-		System.out.println("");
-		logger.info("Max time used for filtering\t{} s\t\t{}%", maxRappFilt, maxRapp);
+			logger.info("\t{} s\t\t{} s\t\t{} s \t{} %", timeCommunication[i], timeComputation[i], timeFinalJoin[i], timeFinalJoin[i]/total[i]);
 		
+		System.out.println("");
+		logger.info("Max time used for final join\t{}\t{}%", maxFinalJoin, maxRapp);
+				
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
 		{
-		     String filename= "/Users/Riccardo Moretti/Dropbox/Universit‡/Tesi/Test/3FilteringCheckingTime.txt";
+		     String filename= "C:/Users/Moretti/Dropbox/Universit‡/Tesi/Test/4CommunicationTimeCardTabelle.txt";
 		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
-			 fw.write(System.lineSeparator()+elapsedChecking[i]);//appends the string to the file
+			 fw.write(System.lineSeparator()+timeCommunication[i]);//appends the string to the file
 			 fw.close();
 		}
 		
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
+		{
+		     String filename= "C:/Users/Moretti/Dropbox/Universit‡/Tesi/Test/4ComputationTimeCardTabelle.txt";
+		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
+			 fw.write(System.lineSeparator()+timeComputation[i]);//appends the string to the file
+			 fw.close();
+		}
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
 		{
-		     String filename= "/Users/Riccardo Moretti/Dropbox/Universit‡/Tesi/Test/3TempoTotale.txt";
+		     String filename= "C:/Users/Moretti/Dropbox/Universit‡/Tesi/Test/4FinalJoinTimeCardTabelle.txt";
+		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
+			 fw.write(System.lineSeparator()+timeFinalJoin[i]);//appends the string to the file
+			 fw.close();
+		}
+		
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
+		{
+		     String filename= "C:/Users/Moretti/Dropbox/Universit‡/Tesi/Test/4TempoTotaleCardTabelle.txt";
 		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
 			 fw.write(System.lineSeparator()+total[i]);//appends the string to the file
 			 fw.close();
 		}
+		
 	}
 }
