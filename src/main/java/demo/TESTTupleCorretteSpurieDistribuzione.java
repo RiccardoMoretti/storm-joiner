@@ -16,7 +16,7 @@ import joiner.server.DataServer;
 
 					/* CLASS FOR TESTING */
 
-public class TESTTupleCorretteSpurieSoglia {
+public class TESTTupleCorretteSpurieDistribuzione {
 
 	private final static Logger logger = LoggerFactory.getLogger(Test.class);
 

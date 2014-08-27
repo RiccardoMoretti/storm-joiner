@@ -20,17 +20,17 @@ public class TESTTupleCorretteSpurieDominioAttributoJoin {
 
 	private final static Logger logger = LoggerFactory.getLogger(Test.class);
 
-	private final static int NUMMARKERS  = 100;
-	private final static int ONETWINEVERY  = 25;
+	private final static int NUMMARKERS  = 250;
+	private final static int ONETWINEVERY  = 100;
 
-	private final static int TUPLETABLEL  = 500;
-	private final static int TUPLETABLER  = 500;
+	private final static int TUPLETABLEL  = 1000;
+	private final static int TUPLETABLER  = 1000;
 	
 	private final static int DOMAINSTARTSAT  = 0;
 	
-	private final static int SOGLIA  = 5;
+	private final static int SOGLIA  = 1;
 
-	private final static int NUMTESTCASE  = 25;
+	private final static int NUMTESTCASE  = 100;
 
 	public static void main(String[] args) throws Exception {
 		
@@ -51,11 +51,11 @@ public class TESTTupleCorretteSpurieDominioAttributoJoin {
 		cs.last(NUMTESTCASE);
 		cs.start();
 		
-		int DOMAINENDSAT  = 1000;
+		int DOMAINENDSAT  = 10000;
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
 		{
-			DOMAINENDSAT  = DOMAINENDSAT + 500;
+			DOMAINENDSAT  = DOMAINENDSAT + 1000;
 						
 			// create the data server
 			DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , DOMAINSTARTSAT, DOMAINENDSAT, SOGLIA);

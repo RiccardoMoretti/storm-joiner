@@ -1,6 +1,7 @@
 package joiner.server;
 
 import java.util.Set;
+import java.util.Random;
 
 import javax.crypto.Cipher;
 
@@ -80,7 +81,7 @@ public class DataWorker extends Thread {
 		this.portClient = port;
 		this.tempDisc = new float[2];	
 		this.D = new Domain(min,max,soglia);
-		this.Z = new ZipfGenerator ((int) D.getDomainSize(), 0.5 );
+		this.Z = new ZipfGenerator ((int) D.getDomainSize(), 1 );
 		this.discretizingTime = 0 ;
 				
 		parseRequest(request);
@@ -122,6 +123,10 @@ public class DataWorker extends Thread {
 			
 			// the join attribute must be unique
 			// check that the generator will create all different
+				
+				
+////////////////////////////USING ZIPF DISTRIBUTION//////////////////////////////////////////////
+				
 				for (int i = 0 ; i < to ; ++i)	
 				{	
 					rand = Z.nextInt()+D.getMin();
@@ -146,7 +151,42 @@ public class DataWorker extends Thread {
 					float elapsed = (System.nanoTime() - initial) / ((float) BILLION);
 					discretizingTime = discretizingTime + elapsed;
 				}
-			
+				
+/////////////////////////////E N D////////////////////////////////////////////////////////
+
+							
+/*								
+////////////////////////////USING RAND DISTRIBUTION//////////////////////////////////////////////
+	
+				Random casu = new Random();
+				
+				for (int i = 0 ; i < to ; ++i)	
+				{					
+					rand = casu.nextInt( (int) ( D.getMax() - D.getMin() ) ) +(int)(D.getMin());
+					ok = false ;
+	
+					while ( !ok )
+					{	 cont = 0;
+
+					for ( int j = 0 ; j < i ; j++ )
+						if ( random[j] != rand )
+							cont++;
+					
+					if ( cont == i )
+						ok = true;
+					else
+						rand = casu.nextInt( (int) ( D.getMax() - D.getMin() ) ) +(int)(D.getMin());
+					}
+	
+					random[i] = rand ;
+					long initial = System.nanoTime();				
+					discretized[i] = this.discretized(random[i]);						
+					float elapsed = (System.nanoTime() - initial) / ((float) BILLION);
+					discretizingTime = discretizingTime + elapsed;
+				}
+	
+/////////////////////////////E N D///////////////////////////////////////////////////////*/
+	
 				for (int i = 0 ; i < to ; ++i)
 					encryptAndSend( Float.toString(discretized[i]), Prefix.DATA, true);
 						
@@ -184,7 +224,10 @@ public class DataWorker extends Thread {
 					encryptAndSend(marker, Prefix.MARKER, false); 
 					
 				// Send the data (with the twins)		
+
 			
+////////////////////////////USING ZIPF DISTRIBUTION//////////////////////////////////////////////
+
 				for (int i = 0 ; i < 2*to ; i = i + 2 )
 		
 				{	rand = Z.nextInt()+D.getMin();
@@ -213,6 +256,45 @@ public class DataWorker extends Thread {
 				float elapsed = (System.nanoTime() - initial) / ((float) BILLION);
 				discretizingTime = discretizingTime + elapsed;
 			}
+			
+//////////////////////////////// E N D ////////////////////////////////////////////////////////
+
+				/*				
+////////////////////////////// USING RAND DISTRIBUTION ///////////////////////////////////////
+
+				Random casu = new Random();
+				
+				for (int i = 0 ; i < 2*to ; i = i + 2 )
+					
+				{	rand = casu.nextInt( (int) ( D.getMax() - D.getMin() ) ) +(int)(D.getMin());
+					ok = false ;
+								
+				while ( !ok )
+				{	 cont = 0;
+		
+					for ( int j = 0 ; j < i ; j++ )
+						if ( random[j] != rand )
+								cont++;
+
+					if ( cont == i )
+						ok = true;
+					else
+						rand = casu.nextInt( (int) ( D.getMax() - D.getMin() ) ) +(int)(D.getMin());
+				}
+							
+				random[i] = rand ;
+				random[i+1] = rand ;
+				
+				long initial = System.nanoTime();
+				tempDisc = this.discretizedBis(random[i]);						
+				discretized[i] = tempDisc[0];
+				discretized[i+1] = tempDisc[1];
+				float elapsed = (System.nanoTime() - initial) / ((float) BILLION);
+				discretizingTime = discretizingTime + elapsed;
+			}
+				
+				
+//////////////////////////////////////////////////////////////////////////////////////////////*/
 			
 			for (int i = 0 ; i < 2*to ; ++i)
 				encryptAndSend( Float.toString(discretized[i]), Prefix.DATA, true);

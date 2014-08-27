@@ -16,7 +16,7 @@ import joiner.server.DataServer;
 
 					/* CLASS FOR TESTING */
 
-public class TESTFinalJoinTimeSoglia {
+public class TESTFinalJoinTimeDisitribuzione {
 
 	private final static Logger logger = LoggerFactory.getLogger(Test.class);
 
@@ -35,6 +35,8 @@ public class TESTFinalJoinTimeSoglia {
 
 	private final static int NUMTESTCASE  = 100;
 	
+	private final static int SOGLIA  = 1;
+
 	public static void main(String[] args) throws Exception {
 		
 		Float timeCommunication[] = new Float[NUMTESTCASE];
@@ -59,7 +61,7 @@ public class TESTFinalJoinTimeSoglia {
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
 		{
 			// create the data server
-			DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , DOMAINSTARTSAT, DOMAINENDSAT, i + 1);
+			DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , DOMAINSTARTSAT, DOMAINENDSAT, SOGLIA);
 			ds.last(4);
 			ds.start();
 
@@ -113,7 +115,7 @@ public class TESTFinalJoinTimeSoglia {
 				
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
 		{
-		     String filename= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/4CommunicationTimeSoglia.txt";
+		     String filename= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/4CommunicationTimeDistribuzione.txt";
 		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
 			 fw.write(System.lineSeparator()+timeCommunication[i]);//appends the string to the file
 			 fw.close();
@@ -121,7 +123,7 @@ public class TESTFinalJoinTimeSoglia {
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
 		{
-		     String filename= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/4ComputationTimeSoglia.txt";
+		     String filename= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/4ComputationTimeDistribuzione.txt";
 		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
 			 fw.write(System.lineSeparator()+timeComputation[i]);//appends the string to the file
 			 fw.close();
@@ -129,7 +131,7 @@ public class TESTFinalJoinTimeSoglia {
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
 		{
-		     String filename= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/4FinalJoinTimeSoglia.txt";
+		     String filename= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/4FinalJoinTimeDistribuzione.txt";
 		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
 			 fw.write(System.lineSeparator()+timeFinalJoin[i]);//appends the string to the file
 			 fw.close();
@@ -137,7 +139,7 @@ public class TESTFinalJoinTimeSoglia {
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
 		{
-		     String filename= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/4TempoTotaleSoglia.txt";
+		     String filename= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/4TempoTotaleDistribuzione.txt";
 		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
 			 fw.write(System.lineSeparator()+total[i]);//appends the string to the file
 			 fw.close();

@@ -24,13 +24,13 @@ public class TESTFinalJoinTimeCardinalit‡Tabelle {
 	private final static int MILLION  = THOUSAND * THOUSAND;
 	private final static int BILLION  = THOUSAND * MILLION;
 
-	private final static int NUMMARKERS  = 100;
-	private final static int ONETWINEVERY  = 25;
+	private final static int NUMMARKERS  = 250;
+	private final static int ONETWINEVERY  = 100;
 
 	private final static int DOMAINSTARTSAT  = 0;
 	private final static int DOMAINENDSAT  = 10000;
 	
-	private final static int SOGLIA  = 5;
+	private final static int SOGLIA = 1;
 
 	private final static int NUMTESTCASE  = 100;
 	

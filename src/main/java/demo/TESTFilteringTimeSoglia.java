@@ -15,7 +15,7 @@ import joiner.server.DataServer;
 
 import java.io.*;
 
-					/* CLASS FOR TESTING */
+					/* DA ESEGUIRE CON PARAMETRO 1 */
 
 public class TESTFilteringTimeSoglia {
 
@@ -24,17 +24,17 @@ public class TESTFilteringTimeSoglia {
 	private final static int THOUSAND = 1000;
 	private final static int MILLION  = THOUSAND * THOUSAND;
 	private final static int BILLION  = THOUSAND * MILLION;
-
-	private final static int NUMMARKERS  = 50;
-	private final static int ONETWINEVERY  = 10;
+	
+	private final static int NUMMARKERS  = 250;
+	private final static int ONETWINEVERY  = 100;
 
 	private final static int DOMAINSTARTSAT  = 0;
-	private final static int DOMAINENDSAT  = 50;
-
-	private final static int TUPLETABLEL  = 10;
-	private final static int TUPLETABLER  = 5;
-
-	private final static int NUMTESTCASE  = 10;
+	private final static int DOMAINENDSAT  = 50000;
+	
+	private final static int TUPLETABLEL  = 1000;
+	private final static int TUPLETABLER  = 1000;
+	
+	private final static int NUMTESTCASE  = 100;
 
 	public static void main(String[] args) throws Exception {
 		
@@ -56,8 +56,10 @@ public class TESTFilteringTimeSoglia {
 		cs.last(NUMTESTCASE);
 		cs.start();
 
+		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
 		{
+			
 			// create the data server
 			DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , DOMAINSTARTSAT, DOMAINENDSAT, i + 1);
 			ds.last(4);
@@ -108,7 +110,7 @@ public class TESTFilteringTimeSoglia {
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
 		{
-		     String filename= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/3FilteringCheckingTimeSoglia.txt";
+		     String filename= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/3FilteringSoglia.txt";
 		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
 			 fw.write(System.lineSeparator()+elapsedChecking[i]);//appends the string to the file
 			 fw.close();

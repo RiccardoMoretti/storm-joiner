@@ -15,35 +15,35 @@ import joiner.server.DataServer;
 
 import java.io.*;
 
-					/* CLASS FOR TESTING */
+					/* DA ESEGUIRE CON PARAMETRO 1 */
 
-public class TESTDiscretizingTimeSoglia {
+public class TESTFilteringTimeDistribuzione {
 
 	private final static Logger logger = LoggerFactory.getLogger(Test.class);
 
 	private final static int THOUSAND = 1000;
 	private final static int MILLION  = THOUSAND * THOUSAND;
 	private final static int BILLION  = THOUSAND * MILLION;
-
-	//in questo test marker e twins "non importano"
-	private final static int NUMMARKERS  = 50;
+	
+	private final static int NUMMARKERS  = 250;
 	private final static int ONETWINEVERY  = 100;
 
 	private final static int DOMAINSTARTSAT  = 0;
-	private final static int DOMAINENDSAT  = 10000;
+	private final static int DOMAINENDSAT  = 25000;
+
+	private final static int TUPLETABLEL  = 1000;
+	private final static int TUPLETABLER  = 1000;
 	
-	private final static int TUPLETABLEL  = 500;
-	private final static int TUPLETABLER  = 500;
+	private final static int SOGLIA  = 1;
 
 	private final static int NUMTESTCASE  = 100;
 
 	public static void main(String[] args) throws Exception {
 		
-		float elapsed[] = new float[NUMTESTCASE];
-		long initial[] = new long[NUMTESTCASE];
-		float discretizingTimeL[] = new float[NUMTESTCASE];
-		float discretizingTimeR[] = new float[NUMTESTCASE];
-		
+		Float elapsedChecking[] = new Float[NUMTESTCASE];
+		Float total[] = new Float[NUMTESTCASE];
+		Float rappTime[] = new Float[NUMTESTCASE];
+
 		// create the markers
 		Set<String> markers = new HashSet<String>();
 
@@ -58,12 +58,10 @@ public class TESTDiscretizingTimeSoglia {
 		cs.last(NUMTESTCASE);
 		cs.start();
 
-		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
 		{
-			
 			// create the data server
-			DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , DOMAINSTARTSAT, DOMAINENDSAT, i+1);
+			DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , DOMAINSTARTSAT, DOMAINENDSAT, SOGLIA);
 			ds.last(4);
 			ds.start();
 
@@ -74,11 +72,14 @@ public class TESTDiscretizingTimeSoglia {
 			Client client = new Client ("ThisIsASecretKey", markers, twin);
 			client.connect("tcp://127.0.0.1:5555");
 
-			initial[i] = System.nanoTime();
+			
+			long initial = System.nanoTime();
 			client.join(sc1, sc2);
-			elapsed[i] = (System.nanoTime() - initial[i]) / ((float) BILLION);
-			discretizingTimeL[i] = client.getDiscretizingTime1(); 
-			discretizingTimeR[i] = client.getDiscretizingTime2();
+			
+			total[i] = (System.nanoTime() - initial) / ((float) BILLION);
+			elapsedChecking[i]=client.getElapsedChecking();
+			rappTime[i]= elapsedChecking[i]/total[i];
+			
 			client.destroy();
 
 		}
@@ -88,34 +89,40 @@ public class TESTDiscretizingTimeSoglia {
 		logger.info("Number of tulpes L: {} ", TUPLETABLEL);
 		logger.info("Number of tuples R: {} ", TUPLETABLER);
 		System.out.println("");
-		logger.info("DiscretizationTimeL\tDiscretizationTimeR\tTotalTimeExeceution\tRapp");
+		float maxRapp = 0 ;
+		float maxRappFilt = 0 ;
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
-			logger.info("\t{}\t\t{}\t\t{}\t\t{} %",discretizingTimeL[i],discretizingTimeR[i],elapsed[i],( (discretizingTimeL[i]+discretizingTimeR[i])/elapsed[i])*100 );
+		{			
+			if ( rappTime[i] > maxRapp )
+					{
+						maxRapp = rappTime[i]; 
+						maxRappFilt = elapsedChecking[i];
+					}
+		}
+		
+		logger.info("\tCheckingTime\tRappTime\t\t");
+		
+		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
+			logger.info("\t{} s\t{} %", elapsedChecking[i],rappTime[i]);
+		System.out.println("");
+		logger.info("Max time used for filtering\t{} s\t\t{}%", maxRappFilt, maxRapp);
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
 		{
-			String filenameL= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/2TempoDiscretizzazioneLSoglia.txt";
-			FileWriter fwL = new FileWriter(filenameL,true); //the true will append the new data
-			fwL.write(System.lineSeparator()+discretizingTimeL[i]);//appends the string to the file
-			fwL.close();
+		     String filename= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/3FilteringDistribuzione.txt";
+		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
+			 fw.write(System.lineSeparator()+elapsedChecking[i]);//appends the string to the file
+			 fw.close();
 		}
-				
-		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
-		{	
-			String filenameR= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/2TempoDiscretizzazioneRSoglia.txt";
-		    FileWriter fwR = new FileWriter(filenameR,true); //the true will append the new data
-			fwR.write(System.lineSeparator()+discretizingTimeR[i]);//appends the string to the file
-			fwR.close();
-		}
+		
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
 		{
-		     String filenameT= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/2TempoTotaleSoglia.txt";
-		     FileWriter fwT = new FileWriter(filenameT,true); //the true will append the new data
-			 fwT.write(System.lineSeparator()+elapsed[i]);//appends the string to the file
-			 fwT.close();
+		     String filename= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/3TempoTotaleDistribuzione.txt";
+		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
+			 fw.write(System.lineSeparator()+total[i]);//appends the string to the file
+			 fw.close();
 		}
-	
 	}
 }

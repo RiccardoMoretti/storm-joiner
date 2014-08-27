@@ -24,15 +24,15 @@ public class Test {
 	private final static int BILLION  = THOUSAND * MILLION;
 
 	private final static int NUMMARKERS  = 100;
-	private final static int ONETWINEVERY  = 10;
+	private final static int ONETWINEVERY  = 25;
 
 	private final static int DOMAINSTARTSAT  = 0;
-	private final static int DOMAINENDSAT  = 50;
+	private final static int DOMAINENDSAT  = 100000;
 
-	private final static int TUPLETABLEL  = 10;
-	private final static int TUPLETABLER  = 5;
+	private final static int TUPLETABLEL  = 500;
+	private final static int TUPLETABLER  = 500;
 
-	private final static int NUMTESTCASE  = 5;
+	private final static int NUMTESTCASE  = 10;
 
 	public static void main(String[] args) throws Exception {
 		

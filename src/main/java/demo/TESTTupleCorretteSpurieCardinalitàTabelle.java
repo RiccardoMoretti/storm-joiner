@@ -26,15 +26,15 @@ public class TESTTupleCorretteSpurieCardinalit‡Tabelle {
 
 	private final static Logger logger = LoggerFactory.getLogger(Test.class);
 
-	private final static int NUMMARKERS  = 100;
-	private final static int ONETWINEVERY  = 25;
+	private final static int NUMMARKERS  = 250;
+	private final static int ONETWINEVERY  = 100;
 
 	private final static int DOMAINSTARTSAT  = 0;
-	private final static int DOMAINENDSAT  = 10000;
+	private final static int DOMAINENDSAT  = 50000;
 
 	private final static int NUMTESTCASE  = 100;
 	
-	private final static int SOGLIA  = 5;
+	private final static int SOGLIA  = 1;
 
 	public static void main(String[] args) throws Exception {
 		
