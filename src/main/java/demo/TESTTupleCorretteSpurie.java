@@ -14,9 +14,22 @@ import joiner.commons.twins.TwinFunction;
 import joiner.computational.ComputationalServer;
 import joiner.server.DataServer;
 
-					/* CLASS FOR TESTING */
+				/* DA ESEGUIRE CON PARAMETRO 1 */
 
-public class TESTTupleCorretteSpurieSoglia {
+/*
+* Dominio fisso 0-25000. Uso di 250 marker e 1 twin ogni 100. Soglia 0-50.
+* 
+* Far variare la cardinalità delle tabelle in vari run
+* 
+* 1000	FATTO 
+* 
+* 5000 FATTO
+* 
+* 2500 FATTO
+* 
+*/
+
+public class TESTTupleCorretteSpurie {
 
 	private final static Logger logger = LoggerFactory.getLogger(Test.class);
 
@@ -24,15 +37,13 @@ public class TESTTupleCorretteSpurieSoglia {
 	private final static int ONETWINEVERY  = 100;
 
 	private final static int DOMAINSTARTSAT  = 0;
-	private final static int DOMAINENDSAT  = 5000;
+	private final static int DOMAINENDSAT  = 25000;
 
-	private final static int TUPLETABLEL  = 1000;
-	private final static int TUPLETABLER  = 1000;
+	private final static int TUPLETABLEL  = 5000;
+	private final static int TUPLETABLER  = 5000;
 
-	private final static int NUMTESTCASE  = 10;
+	private final static int NUMTESTCASE  = 50;
 	
-	private final static int SOGLIA  = 1;
-
 	public static void main(String[] args) throws Exception {
 		
 		float dataReal[] = new float[NUMTESTCASE];
@@ -55,7 +66,7 @@ public class TESTTupleCorretteSpurieSoglia {
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
 		{
 			// create the data server
-			DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , DOMAINSTARTSAT, DOMAINENDSAT, SOGLIA);
+			DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , DOMAINSTARTSAT, DOMAINENDSAT, i+1);
 			ds.last(4);
 			ds.start();
 
@@ -128,7 +139,7 @@ public class TESTTupleCorretteSpurieSoglia {
 	
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
 		{
-		     String filename= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/1TupleCorretteDistribuzione.txt";
+		     String filename= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/2TupleCorrette.txt";
 		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
 			 fw.write(System.lineSeparator()+dataReal[i]);//appends the string to the file
 			 fw.close();
@@ -136,7 +147,7 @@ public class TESTTupleCorretteSpurieSoglia {
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
 		{
-		     String filename= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/1TupleSpurieDistribuzione.txt";
+		     String filename= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/2TupleSpurie.txt";
 		     FileWriter fw = new FileWriter(filename,true); //the true will append the new data
 			 fw.write(System.lineSeparator()+dataSpur[i]);//appends the string to the file
 			 fw.close();

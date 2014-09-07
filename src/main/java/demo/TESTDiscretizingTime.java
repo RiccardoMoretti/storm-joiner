@@ -15,7 +15,20 @@ import joiner.server.DataServer;
 
 import java.io.*;
 
-					/* CLASS FOR TESTING */
+/* DA ESEGUIRE CON PARAMETRO 1 */
+
+/*
+* Dominio fisso 0-25000. Uso di 250 marker e 1 twin ogni 100. Soglia 0-50.
+* 
+* Far variare la cardinalità delle tabelle in vari run
+* 
+* 1000 FATTO
+* 
+* 5000 	FATTO
+* 
+* 2500	FATTO
+* 
+*/
 
 public class TESTDiscretizingTime {
 
@@ -25,19 +38,16 @@ public class TESTDiscretizingTime {
 	private final static int MILLION  = THOUSAND * THOUSAND;
 	private final static int BILLION  = THOUSAND * MILLION;
 	
-	//in questo test marker e twins "non importano"
-	private final static int NUMMARKERS  = 50;
+	private final static int NUMMARKERS  = 250;
 	private final static int ONETWINEVERY  = 100;
 	
 	private final static int DOMAINSTARTSAT  = 0;
 	private final static int DOMAINENDSAT  = 25000;
 	
-	private final static int TUPLETABLEL  = 1000;
-	private final static int TUPLETABLER  = 1000;
+	private final static int TUPLETABLEL  = 2500;
+	private final static int TUPLETABLER  = 2500;
 	
-	private final static int SOGLIA  = 1;
-
-	private final static int NUMTESTCASE  = 100;
+	private final static int NUMTESTCASE  = 50;
 
 	public static void main(String[] args) throws Exception {
 		
@@ -66,7 +76,7 @@ public class TESTDiscretizingTime {
 		{
 					
 			// create the data server
-			DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , DOMAINSTARTSAT, DOMAINENDSAT, SOGLIA);
+			DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , DOMAINSTARTSAT, DOMAINENDSAT, i+1);
 			ds.last(4);
 			ds.start();
 
@@ -98,7 +108,7 @@ public class TESTDiscretizingTime {
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
 		{
-			String filenameL= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/2TempoDiscretizzazioneL.txt";
+			String filenameL= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/3TempoDiscL.txt";
 			FileWriter fwL = new FileWriter(filenameL,true); //the true will append the new data
 			fwL.write(System.lineSeparator()+discretizingTimeL[i]);//appends the string to the file
 			fwL.close();
@@ -106,7 +116,7 @@ public class TESTDiscretizingTime {
 				
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
 		{	
-			String filenameR= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/2TempoDiscretizzazioneR.txt";
+			String filenameR= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/3TempoDiscR.txt";
 		    FileWriter fwR = new FileWriter(filenameR,true); //the true will append the new data
 			fwR.write(System.lineSeparator()+discretizingTimeR[i]);//appends the string to the file
 			fwR.close();
@@ -114,7 +124,7 @@ public class TESTDiscretizingTime {
 		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )			
 		{
-		     String filenameT= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/2TempoTotale.txt";
+		     String filenameT= "C:/Users/Moretti/Dropbox/Università/Tesi/Test/3TempoTotale.txt";
 		     FileWriter fwT = new FileWriter(filenameT,true); //the true will append the new data
 			 fwT.write(System.lineSeparator()+elapsed[i]);//appends the string to the file
 			 fwT.close();

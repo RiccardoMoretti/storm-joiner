@@ -124,7 +124,7 @@ public class DataWorker extends Thread {
 			// the join attribute must be unique
 			// check that the generator will create all different
 				
-				
+			
 ////////////////////////////USING ZIPF DISTRIBUTION//////////////////////////////////////////////
 				
 				for (int i = 0 ; i < to ; ++i)	
@@ -259,7 +259,7 @@ public class DataWorker extends Thread {
 			
 //////////////////////////////// E N D ////////////////////////////////////////////////////////
 
-				/*				
+/*								
 ////////////////////////////// USING RAND DISTRIBUTION ///////////////////////////////////////
 
 				Random casu = new Random();
