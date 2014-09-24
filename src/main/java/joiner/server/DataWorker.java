@@ -81,7 +81,7 @@ public class DataWorker extends Thread {
 		this.portClient = port;
 		this.tempDisc = new float[2];	
 		this.D = new Domain(min,max,soglia);
-		this.Z = new ZipfGenerator ((int) D.getDomainSize(), 1 );
+		this.Z = new ZipfGenerator ((int) D.getDomainSize(), 0.5 );
 		this.discretizingTime = 0 ;
 				
 		parseRequest(request);
@@ -130,7 +130,7 @@ public class DataWorker extends Thread {
 				for (int i = 0 ; i < to ; ++i)	
 				{	
 					rand = Z.nextInt()+D.getMin();
-					ok = false ;
+			/*		ok = false ;
 				
 				while ( !ok )
 				{	 cont = 0;
@@ -144,7 +144,7 @@ public class DataWorker extends Thread {
 					else
 						rand = Z.nextInt()+D.getMin() ;
 					}
-				
+			*/	
 					random[i] = rand ;
 					long initial = System.nanoTime();				
 					discretized[i] = this.discretized(random[i]);						
@@ -231,7 +231,7 @@ public class DataWorker extends Thread {
 				for (int i = 0 ; i < 2*to ; i = i + 2 )
 		
 				{	rand = Z.nextInt()+D.getMin();
-					ok = false ;
+			/*		ok = false ;
 								
 				while ( !ok )
 				{	 cont = 0;
@@ -245,7 +245,7 @@ public class DataWorker extends Thread {
 					else
 						rand = Z.nextInt()+D.getMin() ;
 				}
-							
+		    */					
 				random[i] = rand ;
 				random[i+1] = rand ;
 				

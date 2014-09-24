@@ -15,18 +15,16 @@ import joiner.server.DataServer;
 
 import java.io.*;
 
-					/* DA ESEGUIRE CON PARAMETRO 1 */
-
 /*
  * Dominio fisso 0-25000. Uso di 250 marker e 1 twin ogni 100. Soglia 0-50.
  * 
  * Far variare la cardinalità delle tabelle in vari run
  * 
- * 1000	FATTO
+ * 1000	
  * 
- * 5000 FATTO
+ * 2500 
  * 
- * 2500	FATTO
+ * 5000	 FATTO
  * 
  */
 
@@ -44,8 +42,8 @@ public class TESTFilteringTime {
 	private final static int DOMAINSTARTSAT  = 0;
 	private final static int DOMAINENDSAT  = 25000;
 	
-	private final static int TUPLETABLEL  = 2500;
-	private final static int TUPLETABLER  = 2500;
+	private final static int TUPLETABLEL  = 5000;
+	private final static int TUPLETABLER  = 5000;
 	
 	private final static int NUMTESTCASE  = 50;
 

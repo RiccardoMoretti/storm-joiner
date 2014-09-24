@@ -26,7 +26,7 @@ public class Client extends Observable {
 	private final static int THOUSAND = 1000;
 	private final static int MILLION  = THOUSAND * THOUSAND;
 	private final static int BILLION  = THOUSAND * MILLION;
-	private final static int MAXDATA  = 1000000 ;
+	private final static int MAXDATA  = 10000000 ;
 	
 	private final ZContext context;
 	private ZContext contextDataServer1;

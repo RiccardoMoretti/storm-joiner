@@ -14,19 +14,17 @@ import joiner.commons.twins.TwinFunction;
 import joiner.computational.ComputationalServer;
 import joiner.server.DataServer;
 
-				/* DA ESEGUIRE CON PARAMETRO 1 */
-
 /*
 * Dominio fisso 0-25000. Uso di 250 marker e 1 twin ogni 100. Soglia 0-50.
 * 
 * Far variare la cardinalità delle tabelle in vari run
 * 
-* 1000	FATTO 
+* 1000	 
 * 
-* 5000 FATTO
+* 2500   
 * 
-* 2500 FATTO
-* 
+* 5000   
+*  
 */
 
 public class TESTTupleCorretteSpurie {
@@ -63,10 +61,11 @@ public class TESTTupleCorretteSpurie {
 		cs.last(NUMTESTCASE);
 		cs.start();
 
+		
 		for ( int i = 0 ; i < NUMTESTCASE ; i++ )
-		{
+		{			
 			// create the data server
-			DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , DOMAINSTARTSAT, DOMAINENDSAT, i+1);
+			DataServer ds = new DataServer(3000, "ThisIsASecretKey", markers, twin , DOMAINSTARTSAT, DOMAINENDSAT, i + 1);
 			ds.last(4);
 			ds.start();
 
